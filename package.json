@@ -1,0 +1,38 @@
+{
+  "name": "bedrock-payment-paypal",
+  "version": "0.0.1",
+  "description": "This Plugin provides PayPal functionality to bedrock-payment.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/digitalbazaar/bedrock-payment-paypal.git"
+  },
+  "keywords": [
+    "PayPal",
+    "Bedrock",
+    "Payment",
+    "Javascript",
+    "NodeJs"
+  ],
+  "author": "DigitalBazaar",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/digitalbazaar/bedrock-payment-paypal/issues"
+  },
+  "homepage": "https://github.com/digitalbazaar/bedrock-payment-paypal#readme",
+  "devDependencies": {
+    "eslint": "^6.6.0",
+    "eslint-config-digitalbazaar": "^2.0.1",
+    "eslint-plugin-jsdoc": "^17.1.0"
+  },
+  "peerDependencies": {
+    "bedrock": "1.0.0",
+    "bedrock-payment": "1.0.0",
+    "bedrock-validation": "^1.0.0",
+    "axios": "0.19.0",
+    "bignumber.js": "1.0.0"
+  }
+}
