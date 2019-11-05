@@ -19,6 +19,23 @@
 npm install --save bedrock-payment-paypal
 ```
 
+## Configure
+
+```js
+const {config} = require('bedrock');
+
+config.paypal = config.paypal || {};
+config.paypal.api = 'https://api.sandbox.paypal.com';
+config.paypal.clientId = 'your-client-id';
+config.paypal.secret = 'your-secret';
+```
+If you are concerned about your PayPal secret being exposed on github you can use
+an environment variable to store it:
+
+```sh
+export paypal_secret=your-secret-key
+```
+
 ## Author
 
 👤 **Digital Bazaar, Inc.**

@@ -11,13 +11,20 @@ const paymentService = require('bedrock-payment');
 
 const {PaymentStatus, Errors} = paymentService;
 
-const {paypal_client_id, paypal_secret} = process.env;
 const {config} = bedrock;
 const {BedrockError} = bedrock.util;
 
+
+// allow paypal secret to be an env variable.
+const getConfig = () => {
+  const {api, clientId, secret = process.env.paypal_secret} = config.paypal;
+  return {api, clientId, secret};
+}
+
 // credentials needs on the front end to make payments.
 const getGatewayCredentials = () => {
-  return {paypal_client_id};
+  const {clientId} = getConfig();
+  return {paypal_client_id: clientId};
 };
 
 /**
@@ -30,12 +37,11 @@ const getGatewayCredentials = () => {
  * @returns {Promise<object>} The data returned with an `access_token`.
  */
 const getAuthToken = async (
-  {clientId = paypal_client_id, secret = paypal_secret}) => {
+  {clientId, secret, api}) => {
   if(!clientId || !secret) {
     throw new BedrockError(
       'Missing PayPal clientId and/or secret', Errors.Data);
   }
-  const {paypal: {api} = {}} = config;
   const authUrl = `${api}/v1/oauth2/token`;
   const options = {
     headers: {
@@ -62,10 +68,8 @@ const getAuthToken = async (
  *
  * @returns {Promise<object>} Settings for paypal.
  */
-const getOptions = async (
-  {clientId = paypal_client_id, secret = paypal_secret} = {}) => {
+const getOptions = async ({clientId, secret, api} = getConfig()) => {
   const {access_token, token_type} = await getAuthToken({clientId, secret});
-  const {paypal: {api} = {}} = config;
   const Authorization = `${token_type} ${access_token}`;
   const headers = {
     Authorization,
