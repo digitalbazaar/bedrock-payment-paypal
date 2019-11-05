@@ -7,10 +7,9 @@ const bedrock = require('bedrock');
 const BigNumber = require('bignumber.js');
 
 const logger = require('./logger.js');
-const paymentService = require('./bedrock-payment');
-const {Errors} = require('./constants.js');
+const paymentService = require('bedrock-payment');
 
-const {PaymentStatus} = paymentService;
+const {PaymentStatus, Errors} = paymentService;
 
 const {paypal_client_id, paypal_secret} = process.env;
 const {config} = bedrock;
