@@ -22,7 +22,6 @@
     "email": "support@digitalbazaar.com",
     "url": "https://digitalbazaar.com"
   },
-  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/digitalbazaar/bedrock-payment-paypal/issues"
   },
