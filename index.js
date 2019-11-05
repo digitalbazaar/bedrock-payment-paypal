@@ -21,7 +21,7 @@ const getConfig = () => {
   return {api, clientId, secret};
 }
 
-// credentials needs on the front end to make payments.
+// credentials needed on the front end to make payments.
 const getGatewayCredentials = () => {
   const {clientId} = getConfig();
   return {paypal_client_id: clientId};
@@ -237,6 +237,14 @@ const updateOrder = async ({order, patch}) => {
   return updatedOrder;
 };
 
+/**
+ * Gets the total cost of a PayPal order.
+ *
+ * @param {object} options - Options to use.
+ * @param {object} options.order - A PayPal order.
+ *
+ * @return {BigNumber} The total of the PayPal order.
+ */
 const getTotalCost = ({order}) => {
   const {purchase_units} = order;
   // get the total for the purchase_units.
@@ -245,6 +253,16 @@ const getTotalCost = ({order}) => {
   return total;
 };
 
+/**
+ * Compares the amount of a PayPal order and an amount.
+ *
+ * @param {object} options - Options to use.
+ * @param {object} options.order - A PayPal order.
+ * @param {BigNumber|number|string} options.expectedAmount - The
+ *   expected amount.
+ *
+ * @returns {boolean} True is the amounts equal.
+ */
 const compareAmount = ({order, expectedAmount}) => {
   // get the total for the purchase_units.
   const total = getTotalCost({order});
@@ -253,6 +271,7 @@ const compareAmount = ({order, expectedAmount}) => {
     throw new BedrockError(
       `Expected ${expectedAmount} amount got ${total.toString()}`, Errors.Data);
   }
+  return true;
 };
 
 const compareAndSwapAmount = async ({payment, amount, expectedAmount}) => {
