@@ -141,7 +141,7 @@ const getTransactions = async ({start_date, end_date, page = 1}) => {
  * @param {object} options - Options to use.
  * @param {object} options.order - The order from the client.
  *
- * @returns {object} The order data from PayPal.
+ * @returns {object|null} The order data from PayPal.
  */
 const getOrder = async ({id}) => {
   try {
