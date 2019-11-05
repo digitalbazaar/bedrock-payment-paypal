@@ -1,4 +1,5 @@
 ## 0.0.1 -
 
 ### Added
-  - lib/*.js
+  - Initial index.js.
+  - Adds methods to create, update, and void orders. 

@@ -15,6 +15,10 @@ const {config} = bedrock;
 const {BedrockError} = bedrock.util;
 
 
+// payment refers to a Payment.
+// You can find Payment in bedrock-web-payment:
+// https://github.com/digitalbazaar/bedrock-web-payment/blob/initial/lib/Payment.js
+
 // allow paypal secret to be an env variable.
 const getConfig = () => {
   const {api, clientId, secret = process.env.paypal_secret} = config.paypal;
@@ -36,8 +40,7 @@ const getGatewayCredentials = () => {
  *
  * @returns {Promise<object>} The data returned with an `access_token`.
  */
-const getAuthToken = async (
-  {clientId, secret, api}) => {
+const getAuthToken = async ({clientId, secret, api}) => {
   if(!clientId || !secret) {
     throw new BedrockError(
       'Missing PayPal clientId and/or secret', Errors.Data);
