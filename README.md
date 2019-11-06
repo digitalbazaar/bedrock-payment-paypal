@@ -28,6 +28,12 @@ config.paypal = config.paypal || {};
 config.paypal.api = 'https://api.sandbox.paypal.com';
 config.paypal.clientId = 'your-client-id';
 config.paypal.secret = 'your-secret';
+// this will be the name that shows up in the papypal order.
+config.paypal.brandName = 'your-company-name';
+// this can be GET_FROM_FILE, NO_SHIPPING, & SET_PROVIDED_ADDRESS
+// it defaults to NO_SHIPPING.
+// You shouldn't have to set it at all.
+config.paypal.shippingPreference = 'NO_SHIPPING';
 ```
 If you are concerned about your PayPal secret being exposed on github you can use
 an environment variable to store it:

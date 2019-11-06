@@ -389,13 +389,20 @@ const createOrder = async ({payment, intent = 'CAPTURE'}) => {
     reference_id: id,
     amount: {currency_code: currency, value: amount}
   }];
+  const {brandName, shippingPreference} = config.paypal
+  const application_context = {
+    brand_name: brandName || 'bedrock-order',
+    shipping_preference: shippingPreference || 'NO_SHIPPING'
+  };
+  logger.debug('ORDER APPLICATION CONTEXT', {application_context});
   const {headers, api} = await getOptions();
   const url = `${api}/v2/checkout/orders`;
   headers['Content-Type'] = 'application/json';
   const options = {headers};
   const body = {
     intent,
-    purchase_units
+    purchase_units,
+    application_context
   };
   const {data} = await axios.post(url, body, options);
   return data;
