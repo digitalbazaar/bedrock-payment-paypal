@@ -291,6 +291,7 @@ const compareAmount = ({order, expectedAmount}) => {
 const compareAndSwapAmount = async ({payment, amount, expectedAmount}) => {
   // ensure the order is still there.
   const order = await getOrderFromPayment({payment});
+  amount.value = BigNumber(amount.value).toFixed(2).toString();
   compareAmount({order, expectedAmount});
   const patch = [{
     op: 'replace',
@@ -385,9 +386,10 @@ const verifyOrder = async ({order}) => {
  */
 const createOrder = async ({payment, intent = 'CAPTURE'}) => {
   const {id, amount, currency = 'USD'} = payment;
+  const fixedAmount = BigNumber(amount).toFixed(2).toString();
   const purchase_units = [{
     reference_id: id,
-    amount: {currency_code: currency, value: amount}
+    amount: {currency_code: currency, value: fixedAmount}
   }];
   const {brandName, shippingPreference} = config.paypal
   const application_context = {
