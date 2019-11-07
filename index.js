@@ -51,7 +51,7 @@ const getGatewayCredentials = () => {
       Errors.NotFound, {public: true, httpStatusCode: 404}
     );
   }
-  return {paypal_client_id: clientId};
+  return {service: 'paypal', paypal_client_id: clientId};
 };
 
 /**
