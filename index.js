@@ -9,11 +9,13 @@ const BigNumber = require('bignumber.js');
 const logger = require('./logger.js');
 const paymentService = require('bedrock-payment');
 
+// list of all PayPal Supported currency codes.
+const currencies = require('./currencies.js');
+
 const {PaymentStatus, Errors} = paymentService;
 
 const {config} = bedrock;
 const {BedrockError} = bedrock.util;
-
 
 // payment refers to a Payment.
 // You can find Payment in bedrock-web-payment:
@@ -45,6 +47,41 @@ const getGatewayCredentials = () => {
   const {clientId} = getConfig();
   return {paypal_client_id: clientId};
 };
+
+/**
+ * formatAmount - Takes in an amount and formats it.
+ *
+ * @param {object} options - Options to use.
+ * @param {object} options.amount - An amount.
+ *
+ * @throws DataError - If the currency is not supported by PayPal.
+ * @throws DataError - If the amount's value is not a number.
+ *
+ * @return {object} a Formatted amount.
+ */
+const formatAmount = ({amount}) => {
+  const supported = currencies.supported.includes(amount.currency_code);
+  if(!supported) {
+    throw new BedrockError(
+      `Unsupported PayPal currency ${amount.currency_code}`,
+      Errors.Data, {public: true}
+    );
+  }
+  const bigAmount = BigNumber(amount.value);
+  const notNumber = bigAmount.toString() === 'NaN';
+  if(notNumber) {
+    throw new BedrockError(
+      `Invalid amount ${amount.value} ${amount.currency_code}`,
+      Errors.Data, {public: true}
+    );
+  }
+  if(currencies.noDecimal.includes(amount.currency_code)) {
+    amount.value = bigAmount.toFixed(0).toString();
+    return amount;
+  }
+  amount.value = bigAmount.toFixed(2).toString();
+  return amount;
+}
 
 /**
  * Gets a PayPal auth token so we can call on the api.
@@ -291,12 +328,12 @@ const compareAmount = ({order, expectedAmount}) => {
 const compareAndSwapAmount = async ({payment, amount, expectedAmount}) => {
   // ensure the order is still there.
   const order = await getOrderFromPayment({payment});
-  amount.value = BigNumber(amount.value).toFixed(2).toString();
+  const value = formatAmount({amount});
   compareAmount({order, expectedAmount});
   const patch = [{
     op: 'replace',
     path: `/purchase_units/@reference_id=='${payment.id}'/amount`,
-    value: amount
+    value
   }];
   const updatedOrder = await updateOrder({order, patch});
   // make sure the swap occurred.
@@ -385,11 +422,11 @@ const verifyOrder = async ({order}) => {
  * @returns {Promise<object>} The order object.
  */
 const createOrder = async ({payment, intent = 'CAPTURE'}) => {
-  const {id, amount, currency = 'USD'} = payment;
-  const fixedAmount = BigNumber(amount).toFixed(2).toString();
+  const {id, amount: value, currency = 'USD'} = payment;
+  const amount = formatAmount({amount: {currency_code: currency, value}})
   const purchase_units = [{
     reference_id: id,
-    amount: {currency_code: currency, value: fixedAmount}
+    amount
   }];
   const {brandName, shippingPreference} = config.paypal
   const application_context = {
