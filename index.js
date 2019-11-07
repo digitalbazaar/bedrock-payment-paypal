@@ -466,15 +466,7 @@ module.exports = {
   api: {
     getGatewayCredentials,
     compareAndSwapAmount,
-    getOrderFromPayment,
-    updateOrder,
-    deleteOrder,
-    voidPayment,
     createGatewayPayment,
-    verifyOrder,
-    getOrder,
-    getAuthToken,
-    getTransactions,
     process: processPayment
   }
 };
