@@ -45,6 +45,12 @@ const getConfig = () => {
 // credentials needed on the front end to make payments.
 const getGatewayCredentials = () => {
   const {clientId} = getConfig();
+  if(!clientId) {
+    throw new BedrockError(
+      'No Credentials Found for PayPal',
+      Errors.NotFound, {public: true, httpStatusCode: 404}
+    );
+  }
   return {paypal_client_id: clientId};
 };
 

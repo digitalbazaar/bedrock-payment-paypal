@@ -40,6 +40,13 @@ an environment variable to store it:
 
 ```sh
 export paypal_secret=your-secret-key
+export paypal_client_id=your_client_id
+```
+then use it in the config file
+
+```js
+config.paypal.clientId = process.env.paypal_client_id;
+config.paypal.secret = process.env.paypal_secret; 
 ```
 
 ## Author
