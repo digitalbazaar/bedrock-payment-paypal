@@ -19,7 +19,7 @@ const {BedrockError} = bedrock.util;
 
 // payment refers to a Payment.
 // You can find Payment in bedrock-web-payment:
-// https://github.com/digitalbazaar/bedrock-web-payment/blob/initial/lib/Payment.js
+// @see https://github.com/digitalbazaar/bedrock-web-payment/
 
 const getConfig = () => {
   const {api, clientId, secret} = config.paypal;
@@ -39,7 +39,7 @@ const getConfig = () => {
   }
 
   return {api, clientId, secret};
-}
+};
 
 // credentials needed on the front end to make payments.
 const getGatewayCredentials = () => {
@@ -54,7 +54,7 @@ const getGatewayCredentials = () => {
 };
 
 /**
- * formatAmount - Takes in an amount and formats it.
+ * Format Amount - Takes in an amount and formats it.
  *
  * @param {object} options - Options to use.
  * @param {object} options.amount - An amount.
@@ -62,7 +62,7 @@ const getGatewayCredentials = () => {
  * @throws DataError - If the currency is not supported by PayPal.
  * @throws DataError - If the amount's value is not a number.
  *
- * @return {object} a Formatted amount.
+ * @returns {object} A formatted amount.
  */
 const formatAmount = ({amount}) => {
   const supported = currencies.supported.has(amount.currency_code);
@@ -86,7 +86,7 @@ const formatAmount = ({amount}) => {
   }
   amount.value = bigAmount.toFixed(2).toString();
   return amount;
-}
+};
 
 /**
  * Gets a PayPal auth token so we can call on the api.
@@ -125,67 +125,14 @@ const getAuthToken = async ({clientId, secret, api}) => {
  * @returns {Promise<object>} Settings for paypal.
  */
 const getOptions = async ({clientId, secret, api} = getConfig()) => {
-  const {access_token, token_type} = await getAuthToken({clientId, secret, api});
+  const {access_token, token_type} = await getAuthToken(
+    {clientId, secret, api});
   const Authorization = `${token_type} ${access_token}`;
   const headers = {
     Authorization,
     Accept: 'application/json'
   };
   return {api, headers};
-};
-
-/**
- * Gets transactions made via PayPal from start_date to end_date.
- * This is used to check if an incomplete Payment
- * has been completed, rejected, or is in process in PayPal.
- *
- * @param {object} options - Options to use.
- * @param {string|Date} options.start_date - An RFC3339 DateTime.
- * @param {string|Date} options.end_date - An RFC3339 DateTime.
- * @param {number} [options.page = 1] -The page to start on.
- *
- * @returns {Promise<Array<object>>} The transactions from PayPal.
- */
-const getTransactions = async ({start_date, end_date, page = 1}) => {
-  const {headers, api} = await getOptions();
-  const params = {start_date, end_date, page};
-  const dates = ['start_date', 'end_date'];
-  dates.forEach(dateKey => {
-    const value = params[dateKey];
-    // if the date is a string make sure it's a valid
-    // date and format to RFC3339.
-    if(typeof(value) === 'string') {
-      params[dateKey] = new Date(value).toISOString();
-    }
-    // if the dateKey is a Date convert to a string.
-    if(value instanceof Date) {
-      params[dateKey] = params[dateKey].toISOString();
-    }
-    // if it's not there use today's date.
-    if(!value) {
-      params[dateKey] = new Date().toISOString();
-    }
-  });
-  const options = {headers, params};
-  const url = `${api}/v1/reporting/transactions`;
-  let transactions = [];
-  // paypal defaults to 100 transactions per page.
-  // if there have been more than 100 transactions since the start
-  // and end dates we might have to make multiple calls;
-  let totalTransactions = 100;
-  while(transactions.length < totalTransactions) {
-    try {
-      const {data} = await axios.get(url, options);
-      totalTransactions = data.total_items;
-      transactions = transactions.concat(data.transaction_details || []);
-      options.params.page++;
-    } catch(e) {
-      logger.error('PayPal get transactions error', {error: e});
-      totalTransactions = transactions.length;
-    }
-  }
-  // Our local payment id should be the custom_field on a transaction.
-  return transactions;
 };
 
 /**
@@ -205,7 +152,7 @@ const getOrder = async ({id}) => {
     return data;
   } catch(e) {
     logger.error('getOrder not found', {error: e});
-    if(error.response.status === 404) {
+    if(e.response.status === 404) {
       return null;
     }
     throw e;
@@ -217,7 +164,7 @@ const getOrder = async ({id}) => {
  * to find it in the payment gateway.
  *
  * @param {object} options - Options to use.
- * @param {Payment} options.payment - A payment object.
+ * @param {object} options.payment - A payment object.
  *
  * @throws {BedrockError} - Throws not NotFound.
  *
@@ -234,23 +181,6 @@ const getOrderFromPayment = async ({payment}) => {
       message, Errors.NotFound, {httpStatusCode: 404, public: true});
   }
   return order;
-};
-
-/**
- * Void payment.
- *
- * @param {object} options - Options to use.
- * @param {object} options.id - Makes sure a payment can not be completed.
- *
- * @returns {object} Removes authorization for a payment.
- */
-const voidPayment = async ({id}) => {
-  const {headers, api} = await getOptions();
-  const options = {headers};
-  const url = `${api}/v2/payments/authorizations/` +
-    `${encodeURIComponent(id)}/void`;
-  const {data} = await axios.get(url, options);
-  return data;
 };
 
 /**
@@ -302,7 +232,7 @@ const updateOrder = async ({order, patch}) => {
  * @param {object} options - Options to use.
  * @param {object} options.order - A PayPal order.
  *
- * @return {BigNumber} The total of the PayPal order.
+ * @returns {BigNumber} The total of the PayPal order.
  */
 const getTotalCost = ({order}) => {
   const {purchase_units} = order;
@@ -333,7 +263,19 @@ const compareAmount = ({order, expectedAmount}) => {
   return true;
 };
 
-const compareAndSwapAmount = async ({payment, amount, expectedAmount}) => {
+/**
+ * Checks that the existing PayPal order is there
+ * and match the expectedAmount.
+ *
+ * @param {object} options - Options to use.
+ * @param {object} options.payment - A Bedrock payment.
+ * @param {object} options.amount - A Paypal amount object.
+ * @param {BigNumber|number|string} options.expectedAmount - How is expected.
+ *
+ * @returns {object} The updated paypal order.
+ */
+const updateGatewayPaymentAmount = async (
+  {payment, amount, expectedAmount}) => {
   // ensure the order is still there.
   const order = await getOrderFromPayment({payment});
   const value = formatAmount({amount});
@@ -431,12 +373,12 @@ const verifyOrder = async ({order}) => {
  */
 const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
   const {id, amount: value, currency = 'USD'} = payment;
-  const amount = formatAmount({amount: {currency_code: currency, value}})
+  const amount = formatAmount({amount: {currency_code: currency, value}});
   const purchase_units = [{
     reference_id: id,
     amount
   }];
-  const {brandName, shippingPreference} = config.paypal
+  const {brandName, shippingPreference} = config.paypal;
   const application_context = {
     brand_name: brandName || 'bedrock-order',
     shipping_preference: shippingPreference || 'NO_SHIPPING'
@@ -455,7 +397,7 @@ const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
   return data;
 };
 
-const processPayment = async ({payment}) => {
+const processGatewayPayment = async ({payment}) => {
   const order = await getOrderFromPayment({payment});
   const verifiedPurchase = verifyOrder({order});
   return verifiedPurchase;
@@ -465,8 +407,8 @@ module.exports = {
   type: 'paymentsPayPalPlugin',
   api: {
     getGatewayCredentials,
-    compareAndSwapAmount,
+    updateGatewayPaymentAmount,
     createGatewayPayment,
-    process: processPayment
+    processGatewayPayment
   }
 };
