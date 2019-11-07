@@ -420,7 +420,7 @@ const verifyOrder = async ({order}) => {
 };
 
 /**
- * Creates an order server side with no payment
+ * Creates a PayPal order server side with no payment
  * information filled out.
  *
  * @param {object} options - Options to use.
@@ -429,7 +429,7 @@ const verifyOrder = async ({order}) => {
  *
  * @returns {Promise<object>} The order object.
  */
-const createOrder = async ({payment, intent = 'CAPTURE'}) => {
+const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
   const {id, amount: value, currency = 'USD'} = payment;
   const amount = formatAmount({amount: {currency_code: currency, value}})
   const purchase_units = [{
@@ -470,7 +470,7 @@ module.exports = {
     updateOrder,
     deleteOrder,
     voidPayment,
-    createOrder,
+    createGatewayPayment,
     verifyOrder,
     getOrder,
     getAuthToken,
