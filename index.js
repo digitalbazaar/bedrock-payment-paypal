@@ -229,7 +229,7 @@ const getOrderFromPayment = async ({payment}) => {
     const message = 'PayPal order not found.';
     payment.status = PaymentStatus.FAILED;
     payment.error = message;
-    paymentService.db.save({payment});
+    await paymentService.db.save({payment});
     throw new BedrockError(
       message, Errors.NotFound, {httpStatusCode: 404, public: true});
   }
