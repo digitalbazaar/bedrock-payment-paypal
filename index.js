@@ -21,7 +21,6 @@ const {BedrockError} = bedrock.util;
 // You can find Payment in bedrock-web-payment:
 // https://github.com/digitalbazaar/bedrock-web-payment/blob/initial/lib/Payment.js
 
-// allow paypal secret to be an env variable.
 const getConfig = () => {
   const {api, clientId, secret} = config.paypal;
   if(!clientId) {
@@ -195,7 +194,7 @@ const getTransactions = async ({start_date, end_date, page = 1}) => {
  * @param {object} options - Options to use.
  * @param {object} options.order - The order from the client.
  *
- * @returns {object|null} The order data from PayPal.
+ * @returns {Promise<object|null>} The order data from PayPal.
  */
 const getOrder = async ({id}) => {
   try {
@@ -206,7 +205,10 @@ const getOrder = async ({id}) => {
     return data;
   } catch(e) {
     logger.error('getOrder not found', {error: e});
-    return null;
+    if(error.response.status === 404) {
+      return null;
+    }
+    throw e;
   }
 };
 
@@ -229,7 +231,7 @@ const getOrderFromPayment = async ({payment}) => {
     payment.error = message;
     paymentService.db.save({payment});
     throw new BedrockError(
-      message, Errors.NotFound);
+      message, Errors.NotFound, {httpStatusCode: 404, public: true});
   }
   return order;
 };
