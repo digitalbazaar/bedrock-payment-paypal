@@ -60,7 +60,7 @@ const getGatewayCredentials = () => {
  * @return {object} a Formatted amount.
  */
 const formatAmount = ({amount}) => {
-  const supported = currencies.supported.includes(amount.currency_code);
+  const supported = currencies.supported.has(amount.currency_code);
   if(!supported) {
     throw new BedrockError(
       `Unsupported PayPal currency ${amount.currency_code}`,
@@ -75,7 +75,7 @@ const formatAmount = ({amount}) => {
       Errors.Data, {public: true}
     );
   }
-  if(currencies.noDecimal.includes(amount.currency_code)) {
+  if(currencies.noDecimal.has(amount.currency_code)) {
     amount.value = bigAmount.toFixed(0).toString();
     return amount;
   }
