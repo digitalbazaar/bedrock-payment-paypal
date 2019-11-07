@@ -309,7 +309,6 @@ const verifyPurchase = ({paypalPurchases}) => {
   // to purchase more than one product in an order or PayPal allows
   // more than one purchase_unit per order.
   //
-  // FIXME Add a json schema validator here.
   if(!paypalPurchases) {
     throw new BedrockError('Missing PayPal purchases', Errors.Data);
   }
@@ -352,7 +351,7 @@ const verifyOrder = async ({order}) => {
   if(existingPayments.length > 1) {
     // This could be problematic as the user whose card was
     // charged might not get their product.
-    // This does keep duplicate charges using the same PayPal order id.
+    // This does prevent duplicate charges using the same PayPal order id.
     throw new BedrockError(
       `More than one Payment found for PayPal order ${order.id}`,
       Errors.Duplicate
