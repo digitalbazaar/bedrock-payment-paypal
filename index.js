@@ -17,6 +17,9 @@ const {PaymentStatus, Errors} = paymentService;
 const {config} = bedrock;
 const {BedrockError} = bedrock.util;
 
+// Auth tokens are valid for an hour.
+let authCache = null;
+
 const getConfig = () => {
   const {api, clientId, secret} = config.paypal;
   if(!clientId) {
@@ -88,6 +91,13 @@ const formatAmount = ({amount}) => {
  * @returns {Promise<object>} The data returned with an `access_token`.
  */
 const getAuthToken = async ({clientId, secret, api}) => {
+  const fortyFiveMinutes = 2700000;
+  if(authCache !== null) {
+    const {expires = 0} = authCache;
+    if(Date.now() < expires) {
+      return authCache;
+    }
+  }
   const authUrl = `${api}/v1/oauth2/token`;
   const options = {
     headers: {
@@ -103,6 +113,8 @@ const getAuthToken = async ({clientId, secret, api}) => {
   const body = 'grant_type=client_credentials';
   try {
     const {data} = await axios.post(authUrl, body, options);
+    data.expires = Date.now() + fortyFiveMinutes;
+    authCache = data;
     return data;
   } catch(e) {
     const {status} = e.response || e.request;
