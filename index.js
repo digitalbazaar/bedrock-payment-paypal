@@ -112,7 +112,11 @@ const getAuthToken = async ({clientId, secret, api}) => {
   try {
     const {data} = await axios.post(authUrl, body, options);
     // cache expires when PayPal says it will expire.
-    paypalCache.set(authDataKey, data, data.expires_in);
+    const {expires_in} = data;
+    // expire the cache 5 seconds before PayPal's timeout.
+    // or just don't have a time out.
+    const expires = expires_in > 5 ? expires_in - 5 : 0;
+    paypalCache.set(authDataKey, data, expires);
     return data;
   } catch(e) {
     const {status} = e.response || e.request;
