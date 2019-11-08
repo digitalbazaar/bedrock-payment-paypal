@@ -46,6 +46,17 @@ const getGatewayCredentials = () => {
   return {service: 'paypal', paypalClientId: clientId};
 };
 
+// used to lop off sensitive information from an axios error
+const formatAxiosError = ({error, cause}) => {
+  if(error.response || error.request) {
+    const {status = 500} = error.response || error.request || {};
+    const errorType = status === 401 ? 'NotAllowedError' : Errors.Data;
+    return new BedrockError(
+      error.message, errorType, {httpStatusCode: status}, cause);
+  }
+  return error;
+};
+
 /**
  * Format Amount - Takes in an amount and formats it.
  *
@@ -118,12 +129,8 @@ const getAuthToken = async ({clientId, secret, api}) => {
     const expires = expires_in > 5 ? expires_in - 5 : 0;
     paypalCache.set(authDataKey, data, expires);
     return data;
-  } catch(e) {
-    const {status} = e.response || e.request;
-    const error = status === 401 ? 'NotAllowedError' : Errors.Data;
-    throw new BedrockError(
-      e.message, error, {httpStatusCode: status},
-      'PayPal Authentication failed.');
+  } catch(error) {
+    throw formatAxiosError({error, cause: 'PayPal Authentication failed.'});
   }
 };
 
@@ -163,13 +170,12 @@ const getOrder = async ({id}) => {
     const {data} = await axios.get(url, options);
     return data;
   } catch(e) {
-    logger.error('getOrder not found', {error: e});
     if(e.response && e.response.status === 404) {
       throw new BedrockError(
         `PayPal order ${id} not found.`,
         Errors.NotFound, {httpStatusCode: 404, public: true});
     }
-    throw e;
+    throw formatAxiosError({error: e, cause: 'getOrder failed'});
   }
 };
 
@@ -207,11 +213,15 @@ const getOrderFromPayment = async ({payment}) => {
  * @returns {Promise<object>} Cancels and Deletes an order.
  */
 const deleteOrder = async ({order}) => {
-  const {headers, api} = await getOptions();
-  const options = {headers};
-  const url = `${api}/v1/checkout/orders/${encodeURIComponent(order.id)}`;
-  const {data} = await axios.delete(url, options);
-  return data;
+  try {
+    const {headers, api} = await getOptions();
+    const options = {headers};
+    const url = `${api}/v1/checkout/orders/${encodeURIComponent(order.id)}`;
+    const {data} = await axios.delete(url, options);
+    return data;
+  } catch(error) {
+    throw formatAxiosError({error, cause: 'deleteOrder failed'});
+  }
 };
 
 /**
@@ -227,17 +237,21 @@ const deleteOrder = async ({order}) => {
  * @returns {Promise<object|null>} Updated order.
  */
 const updateOrder = async ({order, patch}) => {
-  const {headers, api} = await getOptions();
-  headers['Content-Type'] = 'application/json';
-  const options = {headers};
-  logger.debug(`updating order ${order.id}`);
-  const url = `${api}/v2/checkout/orders/${encodeURIComponent(order.id)}`;
-  logger.debug(`UPDATING ORDER ${order.id}`, {url, patch});
-  // patch method returns nothing
-  await axios.patch(url, patch, options);
-  const updatedOrder = await getOrder({id: order.id});
-  logger.debug('ORDER PATCHED', {updatedOrder, patch});
-  return updatedOrder;
+  try {
+    const {headers, api} = await getOptions();
+    headers['Content-Type'] = 'application/json';
+    const options = {headers};
+    logger.debug(`updating order ${order.id}`);
+    const url = `${api}/v2/checkout/orders/${encodeURIComponent(order.id)}`;
+    logger.debug(`UPDATING ORDER ${order.id}`, {url, patch});
+    // patch method returns nothing
+    await axios.patch(url, patch, options);
+    const updatedOrder = await getOrder({id: order.id});
+    logger.debug('ORDER PATCHED', {updatedOrder, patch});
+    return updatedOrder;
+  } catch(error) {
+    throw formatAxiosError({error, cause: 'updateOrder'});
+  }
 };
 
 /**
@@ -393,29 +407,33 @@ const verifyOrder = async ({order, payment}) => {
  * @returns {Promise<object>} The order object.
  */
 const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
-  const {id, amount: value, currency = 'USD'} = payment;
-  const amount = formatAmount({amount: {currency_code: currency, value}});
-  const purchase_units = [{
-    reference_id: id,
-    amount
-  }];
-  const {brandName, shippingPreference} = config.paypal;
-  const application_context = {
-    brand_name: brandName || 'bedrock-order',
-    shipping_preference: shippingPreference || 'NO_SHIPPING'
-  };
-  logger.debug('ORDER APPLICATION CONTEXT', {application_context});
-  const {headers, api} = await getOptions();
-  const url = `${api}/v2/checkout/orders`;
-  headers['Content-Type'] = 'application/json';
-  const options = {headers};
-  const body = {
-    intent,
-    purchase_units,
-    application_context
-  };
-  const {data} = await axios.post(url, body, options);
-  return data;
+  try {
+    const {id, amount: value, currency = 'USD'} = payment;
+    const amount = formatAmount({amount: {currency_code: currency, value}});
+    const purchase_units = [{
+      reference_id: id,
+      amount
+    }];
+    const {brandName, shippingPreference} = config.paypal;
+    const application_context = {
+      brand_name: brandName || 'bedrock-order',
+      shipping_preference: shippingPreference || 'NO_SHIPPING'
+    };
+    logger.debug('ORDER APPLICATION CONTEXT', {application_context});
+    const {headers, api} = await getOptions();
+    const url = `${api}/v2/checkout/orders`;
+    headers['Content-Type'] = 'application/json';
+    const options = {headers};
+    const body = {
+      intent,
+      purchase_units,
+      application_context
+    };
+    const {data} = await axios.post(url, body, options);
+    return data;
+  } catch(error) {
+    throw formatAxiosError({error, cause: 'createGatewayPayment'});
+  }
 };
 
 const processGatewayPayment = async ({payment}) => {
