@@ -43,7 +43,7 @@ const getConfig = () => {
 // credentials needed on the front end to make payments.
 const getGatewayCredentials = () => {
   const {clientId} = getConfig();
-  return {service: 'paypal', paypal_client_id: clientId};
+  return {service: 'paypal', paypalClientId: clientId};
 };
 
 /**
