@@ -7,11 +7,11 @@ const axios = require('axios');
 const bedrock = require('bedrock');
 const BigNumber = require('bignumber.js');
 
-const logger = require('./logger.js');
+const logger = require('./logger');
 const paymentService = require('bedrock-payment');
 
 // list of all PayPal Supported currency codes.
-const currencies = require('./currencies.js');
+const currencies = require('./currencies');
 
 const {PaymentStatus, Errors} = paymentService;
 
@@ -45,12 +45,6 @@ const getConfig = () => {
 // credentials needed on the front end to make payments.
 const getGatewayCredentials = () => {
   const {clientId} = getConfig();
-  if(!clientId) {
-    throw new BedrockError(
-      'No Credentials Found for PayPal',
-      Errors.NotFound, {public: true, httpStatusCode: 404}
-    );
-  }
   return {service: 'paypal', paypal_client_id: clientId};
 };
 
@@ -404,7 +398,8 @@ const processGatewayPayment = async ({payment}) => {
 };
 
 module.exports = {
-  type: 'paymentsPayPalPlugin',
+  id: 'PayPal',
+  type: 'paymentPlugin',
   api: {
     getGatewayCredentials,
     updateGatewayPaymentAmount,
