@@ -36,7 +36,7 @@ const getConfig = () => {
 
   if(!api) {
     throw new BedrockError(
-      'Missing PayPal api', Errors.Data);
+      'Missing PayPal API.', Errors.Data);
   }
 
   return {api, clientId, secret};
