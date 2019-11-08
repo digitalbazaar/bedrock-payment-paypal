@@ -334,8 +334,11 @@ const verifyOrder = async ({order}) => {
   // at this stage so let's just cancel it.
   if(order.status === 'CREATED') {
     await deleteOrder({order});
-    return {};
+    throw new BedrockError(
+      'PayPal order Cancelled', Errors.Data, {public: false, void: true});
   }
+  // If the status is not CREATED || COMPLETED then
+  // something went wrong with the user's payment.
   if(order.status !== 'COMPLETED') {
     throw new BedrockError(
       `Expected PayPal Status COMPLETED got ${order.status}`,
