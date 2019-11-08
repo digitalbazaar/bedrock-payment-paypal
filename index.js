@@ -6,10 +6,9 @@
 const axios = require('axios');
 const bedrock = require('bedrock');
 const BigNumber = require('bignumber.js');
-
-const logger = require('./logger');
 const paymentService = require('bedrock-payment');
 
+const logger = require('./logger');
 // list of all PayPal Supported currency codes.
 const currencies = require('./currencies');
 
@@ -17,10 +16,6 @@ const {PaymentStatus, Errors} = paymentService;
 
 const {config} = bedrock;
 const {BedrockError} = bedrock.util;
-
-// payment refers to a Payment.
-// You can find Payment in bedrock-web-payment:
-// @see https://github.com/digitalbazaar/bedrock-web-payment/
 
 const getConfig = () => {
   const {api, clientId, secret} = config.paypal;
@@ -106,8 +101,16 @@ const getAuthToken = async ({clientId, secret, api}) => {
     }
   };
   const body = 'grant_type=client_credentials';
-  const {data} = await axios.post(authUrl, body, options);
-  return data;
+  try {
+    const {data} = await axios.post(authUrl, body, options);
+    return data;
+  } catch(e) {
+    const {status} = e.response || e.request;
+    const error = status === 401 ? 'NotAllowedError' : Errors.Data;
+    throw new BedrockError(
+      e.message, error, {httpStatusCode: status},
+      'PayPal Authentication failed.');
+  }
 };
 
 /**
@@ -147,8 +150,10 @@ const getOrder = async ({id}) => {
     return data;
   } catch(e) {
     logger.error('getOrder not found', {error: e});
-    if(e.response.status === 404) {
-      return null;
+    if(e.response && e.response.status === 404) {
+      throw new BedrockError(
+        `PayPal order ${id} not found.`,
+        Errors.NotFound, {httpStatusCode: 404, public: true});
     }
     throw e;
   }
@@ -166,16 +171,16 @@ const getOrder = async ({id}) => {
  * @returns {Promise<object>} The order from the payment gateway.
  */
 const getOrderFromPayment = async ({payment}) => {
-  const order = await getOrder({id: payment.serviceId});
-  if(!order) {
+  try {
+    const order = await getOrder({id: payment.serviceId});
+    return order;
+  } catch(e) {
     const message = 'PayPal order not found.';
     payment.status = PaymentStatus.FAILED;
     payment.error = message;
     await paymentService.db.save({payment});
-    throw new BedrockError(
-      message, Errors.NotFound, {httpStatusCode: 404, public: true});
+    throw e;
   }
-  return order;
 };
 
 /**
