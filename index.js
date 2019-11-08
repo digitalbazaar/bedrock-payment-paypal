@@ -326,20 +326,25 @@ const verifyPurchase = ({paypalPurchases}) => {
  *
  * @param {object} options - Options to use.
  * @param {object} options.order - Client's PayPal order.
+ * @param {object} options.payment - Bedrock Payment class.
  *
  * @returns {Promise<object>} Returns the verified PayPal order and purchase.
  */
-const verifyOrder = async ({order}) => {
+const verifyOrder = async ({order, payment}) => {
   // An order should never be CREATED
   // at this stage so let's just cancel it.
   if(order.status === 'CREATED') {
     await deleteOrder({order});
+    payment.status = PaymentStatus.VOIDED;
+    await paymentService.db.save({payment});
     throw new BedrockError(
-      'PayPal order Cancelled', Errors.Data, {public: false, void: true});
+      'PayPal order Cancelled', Errors.Data, {public: true});
   }
-  // If the status is not CREATED || COMPLETED then
+  // If the status is not COMPLETED then
   // something went wrong with the user's payment.
   if(order.status !== 'COMPLETED') {
+    payment.status = PaymentStatus.FAILED;
+    await paymentService.db.save({payment});
     throw new BedrockError(
       `Expected PayPal Status COMPLETED got ${order.status}`,
       Errors.Data);
@@ -401,7 +406,7 @@ const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
 
 const processGatewayPayment = async ({payment}) => {
   const order = await getOrderFromPayment({payment});
-  const verifiedPurchase = verifyOrder({order});
+  const verifiedPurchase = verifyOrder({order, payment});
   return verifiedPurchase;
 };
 
