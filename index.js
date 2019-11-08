@@ -6,6 +6,7 @@
 const axios = require('axios');
 const bedrock = require('bedrock');
 const BigNumber = require('bignumber.js');
+const NodeCache = require('node-cache');
 const paymentService = require('bedrock-payment');
 
 const logger = require('./logger');
@@ -14,11 +15,10 @@ const currencies = require('./currencies');
 
 const {PaymentStatus, Errors} = paymentService;
 
+const paypalCache = new NodeCache();
+
 const {config} = bedrock;
 const {BedrockError} = bedrock.util;
-
-// Auth tokens are valid for an hour.
-let authCache = null;
 
 const getConfig = () => {
   const {api, clientId, secret} = config.paypal;
@@ -91,12 +91,10 @@ const formatAmount = ({amount}) => {
  * @returns {Promise<object>} The data returned with an `access_token`.
  */
 const getAuthToken = async ({clientId, secret, api}) => {
-  const fortyFiveMinutes = 2700000;
-  if(authCache !== null) {
-    const {expires = 0} = authCache;
-    if(Date.now() < expires) {
-      return authCache;
-    }
+  const authDataKey = 'authData';
+  const authCache = paypalCache.get(authDataKey);
+  if(authCache) {
+    return authCache;
   }
   const authUrl = `${api}/v1/oauth2/token`;
   const options = {
@@ -113,8 +111,8 @@ const getAuthToken = async ({clientId, secret, api}) => {
   const body = 'grant_type=client_credentials';
   try {
     const {data} = await axios.post(authUrl, body, options);
-    data.expires = Date.now() + fortyFiveMinutes;
-    authCache = data;
+    // cache expires when PayPal says it will expire.
+    paypalCache.set(authDataKey, data, data.expires_in);
     return data;
   } catch(e) {
     const {status} = e.response || e.request;
