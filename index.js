@@ -441,7 +441,7 @@ const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
     return data;
   } catch(error) {
     throw new BedrockError(
-      'createGatewayPaymentFailed.', Errors.Data,
+      'Create Gateway Payment Failed.', Errors.Data,
       formatAxiosError({error}));
   }
 };
