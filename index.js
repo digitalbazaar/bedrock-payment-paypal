@@ -24,12 +24,12 @@ const getConfig = () => {
   const {api, clientId, secret} = config.paypal;
   if(!clientId) {
     throw new BedrockError(
-      'Missing PayPal clientId', Errors.Data);
+      'Missing PayPal clientId.', Errors.Data);
   }
 
   if(!secret) {
     throw new BedrockError(
-      'Missing PayPal secret', Errors.Data);
+      'Missing PayPal secret.', Errors.Data);
   }
 
   if(!api) {
@@ -72,7 +72,7 @@ const formatAmount = ({amount}) => {
   const supported = currencies.supported.has(amount.currency_code);
   if(!supported) {
     throw new BedrockError(
-      `Unsupported PayPal currency ${amount.currency_code}`,
+      `Unsupported PayPal currency ${amount.currency_code}.`,
       Errors.Data, {public: true}
     );
   }
@@ -80,7 +80,7 @@ const formatAmount = ({amount}) => {
   const notNumber = bigAmount.toString() === 'NaN';
   if(notNumber) {
     throw new BedrockError(
-      `Invalid amount ${amount.value} ${amount.currency_code}`,
+      `Invalid amount ${amount.value} ${amount.currency_code}.`,
       Errors.Data, {public: true}
     );
   }
@@ -177,7 +177,7 @@ const getOrder = async ({id}) => {
         Errors.NotFound, {httpStatusCode: 404, public: true});
     }
     throw new BedrockError(
-      'Get Order Failed', Errors.Data, formatAxiosError({error: e}));
+      'Get Order Failed.', Errors.Data, formatAxiosError({error: e}));
   }
 };
 
@@ -254,7 +254,7 @@ const updateOrder = async ({order, patch}) => {
     return updatedOrder;
   } catch(error) {
     throw new BedrockError(
-      'Update Order Failed', Errors.Data,
+      'Update Order Failed.', Errors.Data,
       formatAxiosError({error}));
   }
 };
@@ -291,7 +291,9 @@ const compareAmount = ({order, expectedAmount}) => {
   const sameAmount = total.isEqualTo(expectedAmount);
   if(!sameAmount) {
     throw new BedrockError(
-      `Expected ${expectedAmount} amount got ${total.toString()}`, Errors.Data);
+      `Expected ${expectedAmount} amount got ${total.toString()}.`,
+      Errors.Data
+    );
   }
   return true;
 };
@@ -342,11 +344,11 @@ const verifyPurchase = ({paypalPurchases}) => {
   // more than one purchase_unit per order.
   //
   if(!paypalPurchases) {
-    throw new BedrockError('Missing PayPal purchases', Errors.Data);
+    throw new BedrockError('Missing PayPal purchases.', Errors.Data);
   }
   const [paypalPurchase] = paypalPurchases;
   if(!paypalPurchase) {
-    throw new BedrockError('Missing PayPal purchase', Errors.Data);
+    throw new BedrockError('Missing PayPal purchase.', Errors.Data);
   }
   // throw an error if the client altered their purchase amount
   // after the transaction succeeded.
@@ -371,7 +373,7 @@ const verifyOrder = async ({order, payment}) => {
     payment.status = PaymentStatus.VOIDED;
     await paymentService.db.save({payment});
     throw new BedrockError(
-      'PayPal order Cancelled', Errors.Data, {public: true});
+      'PayPal order Cancelled.', Errors.Data, {public: true});
   }
   // If the status is not COMPLETED then
   // something went wrong with the user's payment.
@@ -379,8 +381,9 @@ const verifyOrder = async ({order, payment}) => {
     payment.status = PaymentStatus.FAILED;
     await paymentService.db.save({payment});
     throw new BedrockError(
-      `Expected PayPal Status COMPLETED got ${order.status}`,
-      Errors.Data);
+      `Expected PayPal Status COMPLETED got ${order.status}.`,
+      Errors.Data
+    );
   }
   const {purchase_units: paypalPurchases} = order;
   const verifiedPurchase = verifyPurchase({paypalPurchases});
@@ -393,7 +396,7 @@ const verifyOrder = async ({order, payment}) => {
     // charged might not get their product.
     // This does prevent duplicate charges using the same PayPal order id.
     throw new BedrockError(
-      `More than one Payment found for PayPal order ${order.id}`,
+      `More than one Payment found for PayPal order ${order.id}.`,
       Errors.Duplicate
     );
   }
@@ -438,7 +441,7 @@ const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
     return data;
   } catch(error) {
     throw new BedrockError(
-      'createGatewayPaymentFailed', Errors.Data,
+      'createGatewayPaymentFailed.', Errors.Data,
       formatAxiosError({error}));
   }
 };
