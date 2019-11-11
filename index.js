@@ -53,7 +53,7 @@ const getConfig = () => {
 // credentials needed on the front end to make payments.
 const getGatewayCredentials = () => {
   const {clientId} = getConfig();
-  return {service: 'paypal', paypalClientId: clientId};
+  return {paymentService: 'paypal', paypalClientId: clientId};
 };
 
 // used to lop off sensitive information from an axios error
@@ -242,7 +242,7 @@ const getOrder = async ({id}) => {
  */
 const getOrderFromPayment = async ({payment}) => {
   try {
-    const order = await getOrder({id: payment.serviceId});
+    const order = await getOrder({id: payment.paymentServiceId});
     return order;
   } catch(e) {
     const message = 'PayPal order not found.';
@@ -436,7 +436,7 @@ const verifyOrder = async ({order, payment}) => {
   const verifiedPurchase = verifyPurchase({paypalPurchases});
   // Guards against the user re-using a previous order from PayPal.
   const existingPayments = await paymentService.db.findAll(
-    {query: {service: 'paypal', serviceId: order.id}});
+    {query: {paymentService: 'paypal', paymentServiceId: order.id}});
   // there should be at most 1 existingPayments.
   if(existingPayments.length > 1) {
     // This could be problematic as the user whose card was
@@ -485,7 +485,8 @@ const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
       application_context
     };
     const {data} = await axios.post(url, body, options);
-    return data;
+    payment.paymentServiceId = data.id;
+    return {order: data, payment};
   } catch(error) {
     const {errorType, details} = formatAxiosError({error});
     throw new BedrockError(
