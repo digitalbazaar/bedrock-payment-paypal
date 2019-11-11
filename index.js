@@ -47,13 +47,12 @@ const getGatewayCredentials = () => {
 };
 
 // used to lop off sensitive information from an axios error
-const formatAxiosError = ({error, cause, type = Errors.Data}) => {
-  if(error.response || error.request) {
-    const {status = 500} = error.response || error.request || {};
+const formatAxiosError = ({error}) => {
+  const axiosError = error.response || error.request;
+  if(axiosError) {
+    const {status = 500} = axiosError;
     const {name, message} = error;
-    const errorType = status === 401 ? 'NotAllowedError' : type;
-    return new BedrockError(
-      cause, errorType, {httpStatusCode: status, name, message});
+    return {httpStatusCode: status, name, message};
   }
   return error;
 };
@@ -131,7 +130,8 @@ const getAuthToken = async ({clientId, secret, api}) => {
     paypalCache.set(authDataKey, data, expires);
     return data;
   } catch(error) {
-    throw formatAxiosError({error, cause: 'PayPal Authentication failed.'});
+    throw new BedrockError(
+      'PayPal Authentication failed.', Errors.Data, formatAxiosError({error}));
   }
 };
 
@@ -176,7 +176,8 @@ const getOrder = async ({id}) => {
         `PayPal order ${id} not found.`,
         Errors.NotFound, {httpStatusCode: 404, public: true});
     }
-    throw formatAxiosError({error: e, cause: 'getOrder failed'});
+    throw new BedrockError(
+      'Get Order Failed', Errors.Data, formatAxiosError({error: e}));
   }
 };
 
@@ -221,7 +222,8 @@ const deleteOrder = async ({order}) => {
     const {data} = await axios.delete(url, options);
     return data;
   } catch(error) {
-    throw formatAxiosError({error, cause: 'deleteOrder failed'});
+    throw new BedrockError(
+      'Delete Order Failed.', Errors.Data, formatAxiosError({error}));
   }
 };
 
@@ -251,7 +253,9 @@ const updateOrder = async ({order, patch}) => {
     logger.debug('ORDER PATCHED', {updatedOrder, patch});
     return updatedOrder;
   } catch(error) {
-    throw formatAxiosError({error, cause: 'updateOrder'});
+    throw new BedrockError(
+      'Update Order Failed', Errors.Data,
+      formatAxiosError({error}));
   }
 };
 
@@ -433,7 +437,9 @@ const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
     const {data} = await axios.post(url, body, options);
     return data;
   } catch(error) {
-    throw formatAxiosError({error, cause: 'createGatewayPayment'});
+    throw new BedrockError(
+      'createGatewayPaymentFailed', Errors.Data,
+      formatAxiosError({error}));
   }
 };
 
