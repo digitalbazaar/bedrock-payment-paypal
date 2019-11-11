@@ -47,12 +47,13 @@ const getGatewayCredentials = () => {
 };
 
 // used to lop off sensitive information from an axios error
-const formatAxiosError = ({error, cause}) => {
+const formatAxiosError = ({error, cause, type = Errors.Data}) => {
   if(error.response || error.request) {
     const {status = 500} = error.response || error.request || {};
-    const errorType = status === 401 ? 'NotAllowedError' : Errors.Data;
+    const {name, message} = error;
+    const errorType = status === 401 ? 'NotAllowedError' : type;
     return new BedrockError(
-      error.message, errorType, {httpStatusCode: status}, cause);
+      cause, errorType, {httpStatusCode: status, name, message});
   }
   return error;
 };
