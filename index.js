@@ -20,6 +20,16 @@ const paypalCache = new NodeCache();
 const {config} = bedrock;
 const {BedrockError} = bedrock.util;
 
+const codes = {
+  notAllowed: new Set([403, 401]),
+  constraint: new Set([411, 412, 413, 414, 415, 405]),
+  paymentIncomplete: new Set([402]),
+  notFound: new Set([404]),
+  network: new Set([408]),
+  duplicate: new Set([409]),
+  missing: new Set([410])
+};
+
 const getConfig = () => {
   const {api, clientId, secret} = config.paypal;
   if(!clientId) {
@@ -53,52 +63,40 @@ const formatAxiosError = ({error}) => {
     const {status = 500} = axiosError;
     const {name, message} = error;
     const details = {httpStatusCode: status, name, message};
-    switch(status) {
-      case 403:
-      case 401: {
-        return {details, errorType: Errors.NotAllowed};
-      }
-      // this is not officially implemented yet.
-      case 402: {
-        return {details, errorType: 'PaymentIncomplete'};
-      }
-      // not found.
-      case 404: {
-        return {details, errorType: Errors.NotFound};
-      }
-      // Content-Length header is required.
-      case 411:
-      // Precondition Failed.
-      case 412:
-      // request entity too large.
-      case 413:
-      // request uri to long.
-      case 414:
-      // unsupported media-type.
-      case 415:
-      // method not allowed.
-      case 405: {
-        return {details, errorType: Errors.Constraint};
-      }
-      // something timed out.
-      case 408: {
-        return {details, errorType: Errors.Network};
-      }
-      // thrown when 2 update requests cause a conflict.
-      case 409: {
-        return {details, errorType: Errors.Duplicate};
-      }
-      case 410: {
-        return {details, errorType: 'EndpointMissing'};
-      }
-      default: {
-        // server errors
-        if(status >= 500) {
-          return {details, errorType: Errors.Network};
-        }
-        return {details, errorType: Errors.Data};
-      }
+
+    if(codes.notAllowed.has(status)) {
+      return {details, errorType: Errors.NotAllowed};
     }
+
+    if(codes.constraint.has(status)) {
+      return {details, errorType: Errors.Constraint};
+    }
+
+    if(codes.paymentIncomplete.has(status)) {
+      return {details, errorType: 'PaymentIncomplete'};
+    }
+
+    if(codes.notFound.has(status)) {
+      return {details, errorType: Errors.NotFound};
+    }
+
+    if(codes.network.has(status)) {
+      return {details, errorType: Errors.Network};
+    }
+
+    if(codes.duplicate.has(status)) {
+      return {details, errorType: Errors.Duplicate};
+    }
+
+    if(codes.missing.has(status)) {
+      return {details, errorType: 'EndpointMissing'};
+    }
+
+    if(status >= 500) {
+      return {details, errorType: Errors.Network};
+    }
+
+    return {details, errorType: Errors.Data};
   }
   // if it's already formatted then just throw.
   if(error instanceof BedrockError) {
