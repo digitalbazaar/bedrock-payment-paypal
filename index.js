@@ -47,14 +47,61 @@ const getGatewayCredentials = () => {
 };
 
 // used to lop off sensitive information from an axios error
+// https://developer.paypal.com/docs/classic/ipn/integration-guide/HTMLStatusCodes/
 const formatAxiosError = ({error}) => {
   const axiosError = error.response || error.request;
   if(axiosError) {
     const {status = 500} = axiosError;
     const {name, message} = error;
-    return {httpStatusCode: status, name, message};
+    const details = {httpStatusCode: status, name, message};
+    switch(status) {
+      case 403:
+      case 401: {
+        return {details, errorType: Errors.NotAllowed};
+      }
+      // this is not officially implemented yet.
+      case 402: {
+        return {details, errorType: 'PaymentIncomplete'};
+      }
+      // not found.
+      case 404: {
+        return {details, errorType: Errors.NotFound};
+      }
+      // Content-Length header is required.
+      case 411:
+      // Precondition Failed.
+      case 412:
+      // request entity too large.
+      case 413:
+      // request uri to long.
+      case 414:
+      // unsupported media-type.
+      case 415:
+      // method not allowed.
+      case 405: {
+        return {details, errorType: Errors.Constraint};
+      }
+      // something timed out.
+      case 408: {
+        return {details, errorType: Errors.Network};
+      }
+      // thrown when 2 update requests cause a conflict.
+      case 409: {
+        return {details, errorType: Errors.Duplicate};
+      }
+      case 410: {
+        return {details, errorType: 'EndpointMissing'};
+      }
+      default: {
+        // server errors
+        if(status >= 500) {
+          return {details, errorType: Errors.Network};
+        }
+        return {details, errorType: Errors.Data};
+      }
+    }
   }
-  return error;
+  return {details: error, errorType: Errors.Constraint};
 };
 
 /**
