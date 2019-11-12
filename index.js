@@ -12,6 +12,7 @@ const paymentService = require('bedrock-payment');
 const logger = require('./logger');
 // list of all PayPal Supported currency codes.
 const currencies = require('./currencies');
+require('./config');
 
 const {PaymentStatus, Errors} = paymentService;
 

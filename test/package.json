@@ -1,0 +1,27 @@
+{
+  "name": "bedrock-payment-paypal-test-project",
+  "version": "0.0.1",
+  "description": "Integration Tests for Bedrock Payment PayPal.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha integration/index.js"
+  },
+  "keywords": [
+    "test",
+    "bedrock-payment",
+    "bedrock-payment-paypal"
+  ],
+  "author": {
+    "name": "Digital Bazaar, Inc.",
+    "email": "support@digitalbazaar.com",
+    "url": "https://digitalbazaar.com"
+  },
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "bedrock": "^3.0.1",
+    "bedrock-payment": "github:digitalbazaar/bedrock-payment#initial",
+    "bedrock-validation": "^4.2.0",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.2"
+  }
+}
