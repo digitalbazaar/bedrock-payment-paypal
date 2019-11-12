@@ -8,7 +8,7 @@ const {BedrockError} = bedrock.util;
 const should = chai.should();
 
 describe('updateGatewayPaymentAmount', function() {
-  it('should update a valid payment', async function() {
+  it('should update a valid payment.', async function() {
     const initialPayment = {
       id: `urn:uuid:${bedrock.util.uuid()}`,
       currency: 'USD',
@@ -31,7 +31,7 @@ describe('updateGatewayPaymentAmount', function() {
       {updatedPayment, pendingPayment});
     should.exist(updateResult);
   });
-  it('should reject an invalid amount', async function() {
+  it('should reject an invalid amount.', async function() {
     const initialPayment = {
       id: `urn:uuid:${bedrock.util.uuid()}`,
       currency: 'USD',
