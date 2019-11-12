@@ -4,7 +4,7 @@
   "description": "Integration Tests for Bedrock Payment PayPal.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha integration/index.js"
+    "test": "node --preserve-symlinks test test"
   },
   "keywords": [
     "test",
@@ -17,11 +17,13 @@
     "url": "https://digitalbazaar.com"
   },
   "license": "BSD-3-Clause",
-  "devDependencies": {
+  "dependencies": {
     "bedrock": "^3.0.1",
+    "bedrock-injector": "^1.0.0",
+    "bedrock-mongodb": "^6.0.2",
     "bedrock-payment": "github:digitalbazaar/bedrock-payment#initial",
-    "bedrock-validation": "^4.2.0",
-    "chai": "^4.2.0",
-    "mocha": "^6.2.2"
+    "bedrock-payment-paypal": "file:..",
+    "bedrock-test": "^4.0.2",
+    "bedrock-validation": "^4.2.0"
   }
 }

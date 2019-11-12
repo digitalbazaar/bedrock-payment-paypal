@@ -1,5 +1,5 @@
 const chai = require('chai');
-const {api} = require('../../index');
+const {api} = require('bedrock-payment-paypal');
 
 const should = chai.should();
 
