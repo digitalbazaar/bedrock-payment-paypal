@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "This Plugin provides PayPal functionality to bedrock-payment.",
   "main": "index.js",
+  "scripts": {
+    "test": "cd test && npm test"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/digitalbazaar/bedrock-payment-paypal.git"
