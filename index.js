@@ -357,20 +357,29 @@ const compareAmount = ({order, expectedAmount}) => {
  * @returns {object} The updated paypal order.
  */
 const updateGatewayPaymentAmount = async (
-  {payment, amount, expectedAmount}) => {
+  {pendingPayment, updatedPayment}) => {
+  const expectedAmount = {
+    currency_code: pendingPayment.currency,
+    value: pendingPayment.amount
+  };
+  const amount = {
+    currency_code: updatedPayment.currency,
+    value: updatedPayment.amount
+  };
   // ensure the order is still there.
-  const order = await getOrderFromPayment({payment});
+  const order = await getOrderFromPayment({payment: pendingPayment});
   const value = formatAmount({amount});
   compareAmount({order, expectedAmount});
   const patch = [{
     op: 'replace',
-    path: `/purchase_units/@reference_id=='${payment.id}'/amount`,
+    path: `/purchase_units/@reference_id=='${pendingPayment.id}'/amount`,
     value
   }];
   const updatedOrder = await updateOrder({order, patch});
   // make sure the swap occurred.
   compareAmount({order: updatedOrder, expectedAmount: amount.value});
-  return updatedOrder;
+  const payment = Object.assign(pendingPayment, updatedPayment);
+  return {updatedOrder, payment};
 };
 
 /**
