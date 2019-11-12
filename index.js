@@ -319,7 +319,9 @@ const getTotalCost = ({order}) => {
   // get the total for the purchase_units.
   const total = purchase_units.reduce((accumulator, current) => accumulator.
     plus(current.amount.value), BigNumber(0));
-  return total;
+  // there should only be one currency
+  const currencies = new Set(purchase_units.map(pu => pu.amount.currency_code));
+  return {total, currencies};
 };
 
 /**
@@ -334,11 +336,18 @@ const getTotalCost = ({order}) => {
  */
 const compareAmount = ({order, expectedAmount}) => {
   // get the total for the purchase_units.
-  const total = getTotalCost({order});
-  const sameAmount = total.isEqualTo(expectedAmount);
+  const {total, currencies} = getTotalCost({order});
+  const sameAmount = total.isEqualTo(expectedAmount.value);
   if(!sameAmount) {
     throw new BedrockError(
       `Expected ${expectedAmount} amount got ${total.toString()}.`,
+      Errors.Data
+    );
+  }
+  const sameCurrency = currencies.has(expectedAmount.currency_code);
+  if(!sameCurrency) {
+    throw new BedrockError(
+      `Unexpected currency ${expectedAmount.currency_code}.`,
       Errors.Data
     );
   }
@@ -377,7 +386,7 @@ const updateGatewayPaymentAmount = async (
   }];
   const updatedOrder = await updateOrder({order, patch});
   // make sure the swap occurred.
-  compareAmount({order: updatedOrder, expectedAmount: amount.value});
+  compareAmount({order: updatedOrder, expectedAmount: amount});
   const payment = Object.assign(pendingPayment, updatedPayment);
   return {updatedOrder, payment};
 };
@@ -456,7 +465,8 @@ const verifyOrder = async ({order, payment}) => {
       Errors.Duplicate
     );
   }
-  verifiedPurchase.totalCost = getTotalCost({order});
+  const {total} = getTotalCost({order});
+  verifiedPurchase.totalCost = total;
   return verifiedPurchase;
 };
 
