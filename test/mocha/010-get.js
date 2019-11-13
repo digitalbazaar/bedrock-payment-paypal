@@ -1,7 +1,9 @@
-const chai = require('chai');
-const {api} = require('bedrock-payment-paypal');
+/*!
+ * Copyright (c) 2018-2019 Digital Bazaar, Inc. All rights reserved.
+ */
+'use strict';
 
-const should = chai.should();
+const {api} = require('bedrock-payment-paypal');
 
 describe('getGatewayCredentials', function() {
   it('should return the client Id.', function() {
