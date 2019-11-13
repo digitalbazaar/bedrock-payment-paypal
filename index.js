@@ -216,7 +216,7 @@ const getOrder = async ({id}) => {
   try {
     const {headers, api} = await getOptions();
     const options = {headers};
-    const url = `${api}/v2/checkout/orders/${id}`;
+    const url = `${api}/v2/checkout/orders/${encodeURIComponent(id)}`;
     const {data} = await axios.get(url, options);
     return data;
   } catch(e) {
@@ -520,6 +520,29 @@ const processGatewayPayment = async ({payment}) => {
   return verifiedPurchase;
 };
 
+/**
+ * This is only used in the tests to simulate
+ * credit card failures.
+ *
+ * @param {object} options - Options to use.
+ * @param {object} options.order - A PayPal order object.
+ * @param {object} options.card - The payee's card.
+ *
+ * @returns {object} The result of the payment capture.
+ */
+const capturePaymentOrder = async ({order, card}) => {
+  const {headers, api} = await getOptions();
+  const url = `${api}/v2/checkout/orders/` +
+    `${encodeURIComponent(order.id)}/capture`;
+  headers['Content-Type'] = 'application/json';
+  const options = {headers};
+  const body = {
+    payment_source: {card}
+  };
+  const {data} = await axios.post(url, body, options);
+  return data;
+};
+
 module.exports = {
   id: 'PayPal',
   type: 'paymentPlugin',
@@ -528,5 +551,8 @@ module.exports = {
     updateGatewayPaymentAmount,
     createGatewayPayment,
     processGatewayPayment
+  },
+  test: {
+    capturePaymentOrder
   }
 };
