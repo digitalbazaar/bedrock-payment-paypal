@@ -32,7 +32,6 @@ const selectors = {
 
 const fillInCard = async ({card, order}) => {
   const {href: approvalLink} = order.links.find(l => l.rel === 'approve');
-  console.log('approvalLink', approvalLink);
   if(!approvalLink) {
     throw new Error('approvalLink required');
   }
@@ -42,22 +41,46 @@ const fillInCard = async ({card, order}) => {
   const creditCardButton = await page.$(selectors.accountBtn);
   await creditCardButton.click();
   await page.waitForSelector(selectors.form);
-  await setInputValue(
-    {selector: selectors.card.number, page, value: card.number});
-  await setInputValue(
-    {selector: selectors.card.expires, page, value: card.expiry});
-  await setInputValue(
-    {selector: selectors.card.securityCode, page, value: card.securityCode});
-  await setInputValue(
-    {selector: selectors.card.firstName, page, value: 'FirstName'});
-  await setInputValue(
-    {selector: selectors.card.lastName, page, value: 'LastName'});
-  await setInputValue(
-    {selector: selectors.address.lineOne, page, value: card.address.lineOne});
-  await setInputValue(
-    {selector: selectors.address.lineTwo, page, value: card.address.lineTwo});
-  await setInputValue(
-    {selector: selectors.address.city, page, value: card.address.adminAreaTwo});
+  await setInputValue({
+    selector: selectors.card.number,
+    page,
+    value: card.number
+  });
+  await setInputValue({
+    selector: selectors.card.expires,
+    page,
+    value: card.expiry
+  });
+  await setInputValue({
+    selector: selectors.card.securityCode,
+    page,
+    value: card.securityCode
+  });
+  await setInputValue({
+    selector: selectors.card.firstName,
+    page,
+    value: 'FirstName'
+  });
+  await setInputValue({
+    selector: selectors.card.lastName,
+    page,
+    value: 'LastName'
+  });
+  await setInputValue({
+    selector: selectors.address.lineOne,
+    page,
+    value: card.address.lineOne
+  });
+  await setInputValue({
+    selector: selectors.address.lineTwo,
+    page,
+    value: card.address.lineTwo
+  });
+  await setInputValue({
+    selector: selectors.address.city,
+    page,
+    value: card.address.adminAreaTwo
+  });
   await setInputValue({
     selector: selectors.address.state,
     page,
@@ -68,8 +91,11 @@ const fillInCard = async ({card, order}) => {
     page,
     value: card.address.postalCode
   });
-  await setInputValue(
-    {selector: selectors.contact.phone, page, value: '5409230456'});
+  await setInputValue({
+    selector: selectors.contact.phone,
+    page,
+    value: '5409230456'
+  });
   await setInputValue({
     selector: selectors.contact.email,
     page,
@@ -79,12 +105,9 @@ const fillInCard = async ({card, order}) => {
   const noSignUp = await page.$(selectors.noSignUp);
   await noSignUp.click();
   const ctnBtn = await page.$(selectors.continueBtn);
-  await page.screenshot({path: 'approval_two.png'});
   await ctnBtn.click();
-  await page.screenshot({path: 'approval_three.png'});
   await page.waitForSelector(
-    selectors.continueBtn, {hidden: true, timeout: 45000});
-  await page.screenshot({path: 'approval_four.png'});
+    selectors.continueBtn, {hidden: true, timeout: 65000});
   await browser.close();
 };
 
