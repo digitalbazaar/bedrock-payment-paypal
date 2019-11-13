@@ -8,7 +8,7 @@ const {cards} = require('../cards');
 const {fillInCard} = require('../helper');
 
 const minute = 60000;
-const threeMinutes = 3 * minute;
+const fiveMinutes = 5 * minute;
 
 describe('processGatewayPayment', function() {
 
@@ -28,15 +28,51 @@ describe('processGatewayPayment', function() {
     try {
       await fillInCard({card, order});
       await test.capturePaymentOrder({order});
-      const processed = await api.processGatewayPayment({payment});
-      console.log('processed', processed);
     } catch(e) {
       console.error(e);
+      throw e;
     }
-  }).timeout(threeMinutes);
+    const processed = await api.processGatewayPayment({payment});
+    should.exist(processed);
+    processed.should.be.an('object');
+    should.exist(processed.totalCost);
+  }).timeout(fiveMinutes);
 
   it('should process an updated payment', async function() {
-
-  });
+    const initialPayment = {
+      id: `urn:uuid:${bedrock.util.uuid()}`,
+      currency: 'USD',
+      amount: '10.00',
+      orderService: 'test-order',
+      orderId: 'test-1'
+    };
+    const createResult = await api.createGatewayPayment(
+      {payment: initialPayment});
+    should.exist(createResult);
+    const {payment: pendingPayment} = createResult;
+    const updatedPayment = {
+      id: pendingPayment.id,
+      currency: 'USD',
+      amount: '100.00',
+      orderService: 'test-order',
+      orderId: 'test-1'
+    };
+    const updateResult = await api.updateGatewayPaymentAmount(
+      {updatedPayment, pendingPayment});
+    should.exist(updateResult);
+    const {updatedOrder: order, payment} = updateResult;
+    const card = cards.visa;
+    try {
+      await fillInCard({card, order});
+      await test.capturePaymentOrder({order});
+    } catch(e) {
+      console.error(e);
+      throw e;
+    }
+    const processed = await api.processGatewayPayment({payment});
+    should.exist(processed);
+    processed.should.be.an('object');
+    should.exist(processed.totalCost);
+  }).timeout(fiveMinutes);
 
 });
