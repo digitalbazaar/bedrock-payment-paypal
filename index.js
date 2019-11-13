@@ -530,15 +530,13 @@ const processGatewayPayment = async ({payment}) => {
  *
  * @returns {object} The result of the payment capture.
  */
-const capturePaymentOrder = async ({order, card}) => {
+const capturePaymentOrder = async ({order}) => {
   const {headers, api} = await getOptions();
   const url = `${api}/v2/checkout/orders/` +
     `${encodeURIComponent(order.id)}/capture`;
   headers['Content-Type'] = 'application/json';
   const options = {headers};
-  const body = {
-    payment_source: {card}
-  };
+  const body = {};
   const {data} = await axios.post(url, body, options);
   return data;
 };
