@@ -25,6 +25,7 @@
     "bedrock-payment": "github:digitalbazaar/bedrock-payment#initial",
     "bedrock-payment-paypal": "file:..",
     "bedrock-test": "^4.0.2",
-    "bedrock-validation": "^4.2.0"
+    "bedrock-validation": "^4.2.0",
+    "puppeteer": "^2.0.0"
   }
 }
