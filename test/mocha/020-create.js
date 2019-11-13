@@ -8,6 +8,8 @@ const {util} = require('bedrock');
 const {Errors} = require('bedrock-payment');
 
 const {BedrockError} = util;
+const minute = 60000;
+const twoMinutes = minute * 2;
 
 describe('createGatewayPayment', function() {
 
@@ -21,7 +23,7 @@ describe('createGatewayPayment', function() {
     const testResult = await api.createGatewayPayment({payment});
     should.exist(testResult);
     testResult.should.be.an('object');
-  });
+  }).timeout(twoMinutes);
 
   it('should reject a payment without an amount.', async function() {
     const amount = null;
