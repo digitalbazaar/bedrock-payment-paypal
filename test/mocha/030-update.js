@@ -8,8 +8,11 @@ const {api} = require('bedrock-payment-paypal');
 const {Errors} = require('bedrock-payment');
 
 const {BedrockError} = bedrock.util;
+const minute = 60000;
+const twoMinutes = minute * 2;
 
 describe('updateGatewayPaymentAmount', function() {
+
   it('should update a valid payment.', async function() {
     const initialPayment = {
       id: `urn:uuid:${bedrock.util.uuid()}`,
@@ -32,7 +35,8 @@ describe('updateGatewayPaymentAmount', function() {
     const updateResult = await api.updateGatewayPaymentAmount(
       {updatedPayment, pendingPayment});
     should.exist(updateResult);
-  });
+  }).timeout(twoMinutes);
+
   it('should reject an invalid amount.', async function() {
     const initialPayment = {
       id: `urn:uuid:${bedrock.util.uuid()}`,
@@ -67,4 +71,5 @@ describe('updateGatewayPaymentAmount', function() {
     );
     error.should.deep.equal(expectedError);
   });
+
 });
