@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Integration Tests for Bedrock Payment PayPal.",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "node --preserve-symlinks test test"
   },

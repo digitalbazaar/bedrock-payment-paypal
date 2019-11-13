@@ -1,11 +1,13 @@
+/*!
+ * Copyright (c) 2018-2019 Digital Bazaar, Inc. All rights reserved.
+ */
+'use strict';
+
 const bedrock = require('bedrock');
-const chai = require('chai');
 const {api} = require('bedrock-payment-paypal');
 const {Errors} = require('bedrock-payment');
 
 const {BedrockError} = bedrock.util;
-
-const should = chai.should();
 
 describe('updateGatewayPaymentAmount', function() {
   it('should update a valid payment.', async function() {
