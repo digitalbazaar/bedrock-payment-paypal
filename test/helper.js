@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const {test} = require('bedrock-payment-paypal');
 
 const setInputValue = async ({selector, value, page}) => {
   await page.focus(selector);
@@ -109,6 +110,7 @@ const fillInCard = async ({card, order}) => {
   await page.waitForSelector(
     selectors.continueBtn, {hidden: true, timeout: 65000});
   await browser.close();
+  await test.capturePaymentOrder({order});
 };
 
 module.exports = {

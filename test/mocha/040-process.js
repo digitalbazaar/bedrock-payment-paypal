@@ -3,7 +3,7 @@
  */
 'use strict';
 const bedrock = require('bedrock');
-const {api, test} = require('bedrock-payment-paypal');
+const {api} = require('bedrock-payment-paypal');
 const {cards} = require('../cards');
 const {fillInCard} = require('../helper');
 
@@ -27,7 +27,6 @@ describe('processGatewayPayment', function() {
     const card = cards.visa;
     try {
       await fillInCard({card, order});
-      await test.capturePaymentOrder({order});
     } catch(e) {
       console.error(e);
       throw e;
@@ -64,7 +63,6 @@ describe('processGatewayPayment', function() {
     const card = cards.visa;
     try {
       await fillInCard({card, order});
-      await test.capturePaymentOrder({order});
     } catch(e) {
       console.error(e);
       throw e;
