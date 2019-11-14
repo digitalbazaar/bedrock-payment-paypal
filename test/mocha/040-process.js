@@ -61,6 +61,10 @@ describe('processGatewayPayment', function() {
       {id: paypalId, referenceId: payment.id, status: 'VOIDED'});
     const mockUrl = `/v2/checkout/orders/${encodeURIComponent(paypalId)}`;
     nock(baseURL).get(mockUrl).reply(200, order);
+    const expectedError = new BedrockError(
+      `Expected PayPal Status COMPLETED got ${order.status}.`,
+      Errors.Data
+    );
     let result, error = null;
     try {
       result = await api.processGatewayPayment({payment});
@@ -69,6 +73,7 @@ describe('processGatewayPayment', function() {
     }
     should.exist(error);
     error.should.be.an('object');
+    error.should.deep.equal(expectedError);
     should.not.exist(result);
   });
 
@@ -86,7 +91,11 @@ describe('processGatewayPayment', function() {
     const order = mockPaypal(
       {id: paypalId, referenceId: payment.id, status: 'CREATED'});
     const mockUrl = `/v2/checkout/orders/${encodeURIComponent(paypalId)}`;
-    nock(baseURL).get(mockUrl).reply(200, order);
+    nock(baseURL).
+      get(mockUrl).reply(200, order).
+      delete(() => true).reply(204);
+    const expectedError = new BedrockError(
+      'PayPal order Canceled.', Errors.Data, {public: true});
     let result, error = null;
     try {
       result = await api.processGatewayPayment({payment});
@@ -95,6 +104,7 @@ describe('processGatewayPayment', function() {
     }
     should.exist(error);
     error.should.be.an('object');
+    error.should.deep.equal(expectedError);
     should.not.exist(result);
   }).timeout(fiveMinutes);
 

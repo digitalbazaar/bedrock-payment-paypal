@@ -442,7 +442,7 @@ const verifyOrder = async ({order, payment}) => {
     payment.status = PaymentStatus.VOIDED;
     await paymentService.db.save({payment});
     throw new BedrockError(
-      'PayPal order Cancelled.', Errors.Data, {public: true});
+      'PayPal order Canceled.', Errors.Data, {public: true});
   }
   // If the status is not COMPLETED then
   // something went wrong with the user's payment.

@@ -4,6 +4,9 @@
 'use strict';
 const {config} = require('bedrock');
 const path = require('path');
+const axios = require('axios');
+const nodeAdapter = require('axios/lib/adapters/http');
+axios.defaults.adapter = nodeAdapter;
 require('bedrock-payment-paypal');
 
 config.mocha.tests.push(path.join(__dirname, 'mocha'));
