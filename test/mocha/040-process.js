@@ -3,74 +3,99 @@
  */
 'use strict';
 const bedrock = require('bedrock');
+const nock = require('nock');
 const {api} = require('bedrock-payment-paypal');
-const {cards} = require('../cards');
-const {fillInCard} = require('../helper');
+const {util, config} = require('bedrock');
+const {Errors} = require('bedrock-payment');
+const {mockPaypal} = require('../mock-paypal');
 
+const {BedrockError} = util;
 const minute = 60000;
 const fiveMinutes = 5 * minute;
+const {api: baseURL} = config.paypal;
 
 describe('processGatewayPayment', function() {
+  beforeEach(function() {
+    if(!nock.isActive()) {
+      nock.activate();
+    }
+  });
 
-  it('should process a created payment', async function() {
-    const paymentData = {
+  afterEach(function() {
+    nock.restore();
+  });
+
+  it('should process a COMPLETED paypal payment', async function() {
+    const paypalId = `urn:uuid:${bedrock.util.uuid()}`;
+    const payment = {
       id: `urn:uuid:${bedrock.util.uuid()}`,
       currency: 'USD',
       amount: '10.00',
       orderService: 'test-order',
-      orderId: 'test-1'
+      orderId: 'test-1',
+      paymentService: 'paypal',
+      paymentServiceId: paypalId
     };
-    const {order, payment} = await api.createGatewayPayment(
-      {payment: paymentData});
-    should.exist(order);
-    order.should.be.an('object');
-    const card = cards.visa;
-    try {
-      await fillInCard({card, order});
-    } catch(e) {
-      console.error(e);
-      throw e;
-    }
+    const order = mockPaypal(
+      {id: paypalId, referenceId: payment.id, status: 'COMPLETED'});
+    const mockUrl = `/v2/checkout/orders/${encodeURIComponent(paypalId)}`;
+    nock(baseURL).get(mockUrl).reply(200, order);
     const processed = await api.processGatewayPayment({payment});
     should.exist(processed);
     processed.should.be.an('object');
     should.exist(processed.totalCost);
-  }).timeout(fiveMinutes);
+  });
 
-  it('should process an updated payment', async function() {
-    const initialPayment = {
+  it('should not process a VOIDED paypal payment', async function() {
+    const paypalId = `urn:uuid:${bedrock.util.uuid()}`;
+    const payment = {
       id: `urn:uuid:${bedrock.util.uuid()}`,
       currency: 'USD',
       amount: '10.00',
       orderService: 'test-order',
-      orderId: 'test-1'
+      orderId: 'test-1',
+      paymentService: 'paypal',
+      paymentServiceId: paypalId
     };
-    const createResult = await api.createGatewayPayment(
-      {payment: initialPayment});
-    should.exist(createResult);
-    const {payment: pendingPayment} = createResult;
-    const updatedPayment = {
-      id: pendingPayment.id,
-      currency: 'USD',
-      amount: '100.00',
-      orderService: 'test-order',
-      orderId: 'test-1'
-    };
-    const updateResult = await api.updateGatewayPaymentAmount(
-      {updatedPayment, pendingPayment});
-    should.exist(updateResult);
-    const {updatedOrder: order, payment} = updateResult;
-    const card = cards.visa;
+    const order = mockPaypal(
+      {id: paypalId, referenceId: payment.id, status: 'VOIDED'});
+    const mockUrl = `/v2/checkout/orders/${encodeURIComponent(paypalId)}`;
+    nock(baseURL).get(mockUrl).reply(200, order);
+    let result, error = null;
     try {
-      await fillInCard({card, order});
+      result = await api.processGatewayPayment({payment});
     } catch(e) {
-      console.error(e);
-      throw e;
+      error = e;
     }
-    const processed = await api.processGatewayPayment({payment});
-    should.exist(processed);
-    processed.should.be.an('object');
-    should.exist(processed.totalCost);
+    should.exist(error);
+    error.should.be.an('object');
+    should.not.exist(result);
+  });
+
+  it('should not process a CREATED paypal payment', async function() {
+    const paypalId = `urn:uuid:${bedrock.util.uuid()}`;
+    const payment = {
+      id: `urn:uuid:${bedrock.util.uuid()}`,
+      currency: 'USD',
+      amount: '10.00',
+      orderService: 'test-order',
+      orderId: 'test-1',
+      paymentService: 'paypal',
+      paymentServiceId: paypalId
+    };
+    const order = mockPaypal(
+      {id: paypalId, referenceId: payment.id, status: 'CREATED'});
+    const mockUrl = `/v2/checkout/orders/${encodeURIComponent(paypalId)}`;
+    nock(baseURL).get(mockUrl).reply(200, order);
+    let result, error = null;
+    try {
+      result = await api.processGatewayPayment({payment});
+    } catch(e) {
+      error = e;
+    }
+    should.exist(error);
+    error.should.be.an('object');
+    should.not.exist(result);
   }).timeout(fiveMinutes);
 
 });
