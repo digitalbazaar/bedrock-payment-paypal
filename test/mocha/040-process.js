@@ -1,4 +1,4 @@
-/*!
+/**!
  * Copyright (c) 2018-2019 Digital Bazaar, Inc. All rights reserved.
  */
 'use strict';
@@ -10,8 +10,6 @@ const {Errors} = require('bedrock-payment');
 const {mockPaypal} = require('../mock-paypal');
 
 const {BedrockError} = util;
-const minute = 60000;
-const fiveMinutes = 5 * minute;
 const {api: baseURL} = config.paypal;
 
 describe('processGatewayPayment', function() {
@@ -106,6 +104,6 @@ describe('processGatewayPayment', function() {
     error.should.be.an('object');
     error.should.deep.equal(expectedError);
     should.not.exist(result);
-  }).timeout(fiveMinutes);
+  });
 
 });
