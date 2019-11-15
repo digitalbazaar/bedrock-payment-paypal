@@ -9,11 +9,18 @@ const nodeAdapter = require('axios/lib/adapters/http');
 axios.defaults.adapter = nodeAdapter;
 require('bedrock-payment-paypal');
 
-config.mocha.tests.push(path.join(__dirname, 'mocha'));
+const runUnitTests = true;
+
+if(runUnitTests) {
+  config.mocha.tests.push(path.join(__dirname, 'mocha'));
+} else {
+  // these tests make real real calls on the PayPal API
+  config.mocha.tests.push(path.join(__dirname, 'integration'));
+}
 
 const cfg = config.paypal;
 cfg.api = 'https://api.sandbox.paypal.com';
-// you will need to set these env variables before testing
-cfg.clientId = process.env.paypal_client_id;
-cfg.secret = process.env.paypal_secret;
+// you will need to set these env variables before integration testing
+cfg.clientId = process.env.paypal_client_id || 'testId';
+cfg.secret = process.env.paypal_secret || 'testSecret';
 cfg.brandName = 'test-project';
