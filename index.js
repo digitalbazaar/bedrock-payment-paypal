@@ -182,7 +182,6 @@ const getAuthToken = async ({clientId, secret, api}) => {
     paypalCache.set(authDataKey, data, expires);
     return data;
   } catch(error) {
-    console.log('error', error);
     const {errorType, details} = formatAxiosError({error});
     throw new BedrockError('PayPal Authentication failed.', errorType, details);
   }
@@ -345,7 +344,7 @@ const compareAmount = ({order, expectedAmount}) => {
   const sameAmount = total.isEqualTo(expectedAmount.value);
   if(!sameAmount) {
     throw new BedrockError(
-      `Expected ${expectedAmount} amount got ${total.toString()}.`,
+      `Expected ${expectedAmount.value} amount got ${total.toString()}.`,
       Errors.Data
     );
   }
