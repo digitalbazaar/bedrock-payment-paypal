@@ -1,3 +1,8 @@
+/*!
+ * Copyright (c) 2018-2019 Digital Bazaar, Inc. All rights reserved.
+ */
+'use strict';
+
 const address = {
   lineOne: '173 Drury Lane',
   lineTwo: 'Apt 5',
