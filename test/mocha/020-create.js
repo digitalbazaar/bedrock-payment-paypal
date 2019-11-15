@@ -21,6 +21,7 @@ describe('createGatewayPayment', function() {
     if(!nock.isActive()) {
       nock.activate();
     }
+    nock(baseURL).post('/v1/oauth2/token').reply(200, {});
   });
 
   afterEach(function() {
