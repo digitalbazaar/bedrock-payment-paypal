@@ -5,12 +5,11 @@
 const bedrock = require('bedrock');
 const nock = require('nock');
 const {api} = require('bedrock-payment-paypal');
-const {util, config} = require('bedrock');
+const {util} = require('bedrock');
 const {Errors} = require('bedrock-payment');
-const {mockPaypal} = require('../mock-paypal');
+const {stubs} = require('../mock-paypal');
 
 const {BedrockError} = util;
-const {api: baseURL} = config.paypal;
 
 describe('processGatewayPayment', function() {
   beforeEach(function() {
@@ -34,10 +33,7 @@ describe('processGatewayPayment', function() {
       paymentService: 'paypal',
       paymentServiceId: paypalId
     };
-    const order = mockPaypal(
-      {id: paypalId, referenceId: payment.id, status: 'COMPLETED'});
-    const mockUrl = `/v2/checkout/orders/${encodeURIComponent(paypalId)}`;
-    nock(baseURL).get(mockUrl).reply(200, order);
+    stubs.get({id: paypalId, referenceId: payment.id, status: 'COMPLETED'});
     const processed = await api.processGatewayPayment({payment});
     should.exist(processed);
     processed.should.be.an('object');
@@ -55,10 +51,8 @@ describe('processGatewayPayment', function() {
       paymentService: 'paypal',
       paymentServiceId: paypalId
     };
-    const order = mockPaypal(
+    const {order} = stubs.get(
       {id: paypalId, referenceId: payment.id, status: 'VOIDED'});
-    const mockUrl = `/v2/checkout/orders/${encodeURIComponent(paypalId)}`;
-    nock(baseURL).get(mockUrl).reply(200, order);
     const expectedError = new BedrockError(
       `Expected PayPal Status COMPLETED got ${order.status}.`,
       Errors.Data
@@ -86,12 +80,9 @@ describe('processGatewayPayment', function() {
       paymentService: 'paypal',
       paymentServiceId: paypalId
     };
-    const order = mockPaypal(
+    const {stub} = stubs.get(
       {id: paypalId, referenceId: payment.id, status: 'CREATED'});
-    const mockUrl = `/v2/checkout/orders/${encodeURIComponent(paypalId)}`;
-    nock(baseURL).
-      get(mockUrl).reply(200, order).
-      delete(() => true).reply(204);
+    stub.delete(() => true).reply(204);
     const expectedError = new BedrockError(
       'PayPal order Canceled.', Errors.Data, {public: true});
     let result, error = null;
