@@ -35,20 +35,17 @@ const getConfig = () => {
   const {api, clientId, secret} = config.paypal;
   if(!clientId) {
     throw new BedrockError(
-      'Missing PayPal clientId. You can set this in ' +
-      'bedrock.config.paypal.clientId', Errors.Data);
+      'Missing PayPal clientId in bedrock config.', Errors.Data);
   }
 
   if(!secret) {
     throw new BedrockError(
-      'Missing PayPal secret. You can set this in ' +
-      'bedrock.config.paypal.secret', Errors.Data);
+      'Missing PayPal secret in bedrock config.', Errors.Data);
   }
 
   if(!api) {
     throw new BedrockError(
-      'Missing PayPal API. You can set this in ' +
-      'bedrock.config.paypal.api', Errors.Data);
+      'Missing PayPal API in bedrock config.', Errors.Data);
   }
 
   return {api, clientId, secret};

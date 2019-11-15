@@ -8,7 +8,6 @@ const path = require('path');
 const axios = require('axios');
 const nodeAdapter = require('axios/lib/adapters/http');
 axios.defaults.adapter = nodeAdapter;
-require('bedrock-payment-paypal');
 
 const runUnitTests = true;
 
