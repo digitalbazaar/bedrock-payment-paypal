@@ -4,7 +4,7 @@
 'use strict';
 
 const bedrock = require('bedrock');
-
+require('bedrock-payment-paypal');
 require('bedrock-test');
 
 bedrock.start();
