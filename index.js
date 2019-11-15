@@ -182,6 +182,7 @@ const getAuthToken = async ({clientId, secret, api}) => {
     paypalCache.set(authDataKey, data, expires);
     return data;
   } catch(error) {
+    console.log('error', error);
     const {errorType, details} = formatAxiosError({error});
     throw new BedrockError('PayPal Authentication failed.', errorType, details);
   }
