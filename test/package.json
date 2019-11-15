@@ -26,9 +26,8 @@
     "bedrock-payment-paypal": "file:..",
     "bedrock-test": "^4.0.2",
     "bedrock-validation": "^4.2.0",
+    "nock": "^11.7.0",
     "puppeteer": "^2.0.0"
   },
-  "devDependencies": {
-    "nock": "^11.7.0"
-  }
+  "devDependencies": {}
 }
