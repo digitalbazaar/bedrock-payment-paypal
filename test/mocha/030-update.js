@@ -3,13 +3,12 @@
  */
 'use strict';
 
-const {config, util} = require('bedrock');
+const {util} = require('bedrock');
 const {api} = require('bedrock-payment-paypal');
 const {Errors} = require('bedrock-payment');
 const nock = require('nock');
-const {mockPaypal, stubs} = require('../mock-paypal');
+const {stubs} = require('../mock-paypal');
 
-const {api: baseURL} = config.paypal;
 const {BedrockError} = util;
 
 const minute = 60000;
@@ -48,8 +47,10 @@ describe('updateGatewayPaymentAmount', function() {
       orderService: 'test-order',
       orderId: 'test-1'
     };
-    stubs.get(
+    const {stub, order, mockUrl} = stubs.get(
       {id: paypalId, referenceId: initialPayment.id, status: 'CREATED'});
+    order.purchase_units[0].amount.value = updatedPayment.amount;
+    stub.patch(mockUrl).reply(200).get(mockUrl).reply(200, order);
     const updateResult = await api.updateGatewayPaymentAmount(
       {updatedPayment, pendingPayment});
     should.exist(updateResult);
