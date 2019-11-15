@@ -17,7 +17,6 @@
     "email": "support@digitalbazaar.com",
     "url": "https://digitalbazaar.com"
   },
-  "license": "BSD-3-Clause",
   "dependencies": {
     "bedrock": "^3.0.1",
     "bedrock-injector": "^1.0.0",
