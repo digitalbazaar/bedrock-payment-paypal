@@ -4,24 +4,19 @@
 'use strict';
 
 const {api} = require('bedrock-payment-paypal');
-const {util, config} = require('bedrock');
+const {util} = require('bedrock');
 const nock = require('nock');
 const {Errors} = require('bedrock-payment');
-const {mockPaypal} = require('../mock-paypal');
+const {stubs} = require('../mock-paypal');
 
 const {BedrockError} = util;
-const minute = 60000;
-const twoMinutes = minute * 2;
-const {api: baseURL} = config.paypal;
-
-const createUrl = `/v2/checkout/orders`;
 
 describe('createGatewayPayment', function() {
   beforeEach(function() {
     if(!nock.isActive()) {
       nock.activate();
     }
-    nock(baseURL).post('/v1/oauth2/token').reply(200, {});
+    stubs.auth();
   });
 
   afterEach(function() {
@@ -31,18 +26,17 @@ describe('createGatewayPayment', function() {
   it('should create a payment.', async function() {
     const paypalId = `urn:uuid:${util.uuid()}`;
     const payment = {
+      id: `urn:uuid:${util.uuid()}`,
       currency: 'USD',
       amount: '10.00',
       orderService: 'test-order',
       orderId: 'test-1'
     };
-    const order = mockPaypal(
-      {id: paypalId, referenceId: payment.id, status: 'CREATED'});
-    nock(baseURL).post(createUrl).reply(200, order);
+    stubs.create({id: paypalId, referenceId: payment.id});
     const testResult = await api.createGatewayPayment({payment});
     should.exist(testResult);
     testResult.should.be.an('object');
-  }).timeout(twoMinutes);
+  });
 
   it('should reject a payment without an amount.', async function() {
     const amount = null;

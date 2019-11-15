@@ -1,3 +1,15 @@
+const {config} = require('bedrock');
+const nock = require('nock');
+
+const urls = {
+  create: '/v2/checkout/orders',
+  auth: '/v1/oauth2/token',
+  base: config.paypal.api,
+  byId(id) {
+    return `/v2/checkout/orders/${encodeURIComponent(id)}`;
+  }
+};
+
 const defaultAmount = {
   currency_code: 'USD',
   value: '10.00'
@@ -107,6 +119,26 @@ const mockPaypal = ({id, referenceId, status, amount = defaultAmount}) => ({
   status
 });
 
+const create = ({id, referenceId, amount = defaultAmount}) => {
+  const order = mockPaypal({id, referenceId, status: 'CREATED', amount});
+  const stub = nock(urls.base).post(urls.create).reply(200, order);
+  return {order, stub};
+};
+
+const auth = (credentials = {}) =>
+  nock(urls.base).post(urls.auth).reply(200, credentials);
+
+const get = ({id, referenceId, amount = defaultAmount, status}) => {
+  const order = mockPaypal({id, referenceId, status, amount});
+  const mockUrl = urls.byId(id);
+  const stub = nock(urls.base).get(mockUrl).reply(200, order);
+  return {order, stub, mockUrl};
+};
+
+const stubs = {
+  create, auth, get
+};
+
 module.exports = {
-  mockPaypal
+  mockPaypal, stubs
 };
