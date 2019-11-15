@@ -11,6 +11,7 @@ const setInputValue = async ({selector, value, page}) => {
   await page.keyboard.type(value, {delay: 200});
 };
 
+// these are css selectors for PayPal's payment page.
 const selectors = {
   form: 'form#singlePagePaymentForm',
   accountBtn: 'a#createAccount',
@@ -36,6 +37,19 @@ const selectors = {
   continueBtn: 'button[type="submit"]'
 };
 
+/**
+ * This uses pupetter to use a headleas chrome
+ * browser to fill in the PayPal card info.
+ *
+ * @param {object} options - Options to use.
+ * @param {object} options.card - A credit card object.
+ * @param {object} options.order - A paypal order.
+ *
+ * @throws {Error} Timeout errors if PayPal's gateway
+ *   takes to long to respond.
+ *
+ * @returns {undefined} This is all effects.
+ */
 const fillInCard = async ({card, order}) => {
   const {href: approvalLink} = order.links.find(l => l.rel === 'approve');
   if(!approvalLink) {
