@@ -89,8 +89,8 @@ describe('updateGatewayPaymentAmount', function() {
     should.exist(error);
     should.not.exist(result);
     const expectedError = new BedrockError(
-      `Invalid amount ${updatedPayment.amount} ${updatedPayment.currency}.`,
-      Errors.Data, {public: true}
+      'Invalid amount.',
+      Errors.Data, {public: true, amount: {currency_code: 'USD', value: null}}
     );
     error.should.deep.equal(expectedError);
   });

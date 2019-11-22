@@ -121,16 +121,16 @@ const formatAmount = ({amount}) => {
   const supported = currencies.supported.has(amount.currency_code);
   if(!supported) {
     throw new BedrockError(
-      `Unsupported PayPal currency ${amount.currency_code}.`,
-      Errors.Data, {public: true}
+      'Unsupported PayPal currency.',
+      Errors.Data, {public: true, currencyCode: amount.currency_code}
     );
   }
   const bigAmount = BigNumber(amount.value);
   const notNumber = bigAmount.toString() === 'NaN';
   if(notNumber) {
     throw new BedrockError(
-      `Invalid amount ${amount.value} ${amount.currency_code}.`,
-      Errors.Data, {public: true}
+      'Invalid amount.',
+      Errors.Data, {public: true, amount}
     );
   }
   if(currencies.noDecimal.has(amount.currency_code)) {
@@ -221,8 +221,8 @@ const getOrder = async ({id}) => {
   } catch(e) {
     if(e.response && e.response.status === 404) {
       throw new BedrockError(
-        `PayPal order ${id} not found.`,
-        Errors.NotFound, {httpStatusCode: 404, public: true});
+        'PayPal order not found.',
+        Errors.NotFound, {httpStatusCode: 404, public: true, payPalId: id});
     }
     const {details, errorType} = formatAxiosError({error: e});
     throw new BedrockError('Get Order Failed.', errorType, details);
@@ -347,8 +347,8 @@ const compareAmount = ({order, expectedAmount}) => {
   const sameCurrency = currencies.has(expectedAmount.currency_code);
   if(!sameCurrency) {
     throw new BedrockError(
-      `Unexpected currency ${expectedAmount.currency_code}.`,
-      Errors.Data
+      'Unexpected currency.',
+      Errors.Data, {public: true, currencyCode: expectedAmount.currency_code}
     );
   }
   return true;
@@ -438,7 +438,10 @@ const verifyOrder = async ({order, payment}) => {
     payment.status = PaymentStatus.VOIDED;
     await paymentService.db.save({payment});
     throw new BedrockError(
-      'PayPal order Canceled.', Errors.Data, {public: true});
+      'PayPal order Canceled.',
+      Errors.Data,
+      {public: true, payPalId: order.id}
+    );
   }
   // If the status is not COMPLETED then
   // something went wrong with the user's payment.
@@ -446,8 +449,8 @@ const verifyOrder = async ({order, payment}) => {
     payment.status = PaymentStatus.FAILED;
     await paymentService.db.save({payment});
     throw new BedrockError(
-      `Expected PayPal Status COMPLETED got ${order.status}.`,
-      Errors.Data
+      'Expected PayPal Status COMPLETED.',
+      Errors.Data, {payPalStatus: order.status}
     );
   }
   const {purchase_units: paypalPurchases} = order;
@@ -461,8 +464,8 @@ const verifyOrder = async ({order, payment}) => {
     // charged might not get their product.
     // This does prevent duplicate charges using the same PayPal order id.
     throw new BedrockError(
-      `More than one Payment found for PayPal order ${order.id}.`,
-      Errors.Duplicate
+      'More than one Payment found for PayPal order.',
+      Errors.Duplicate, {payPalId: order.id}
     );
   }
   const {total} = getTotalCost({order});

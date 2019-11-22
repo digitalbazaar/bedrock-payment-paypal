@@ -47,8 +47,9 @@ describe('createGatewayPayment', function() {
       orderId: 'test-1'
     };
     const expectedError = new BedrockError(
-      `Invalid amount ${payment.amount} ${payment.currency}.`,
-      Errors.Data, {public: true}
+      'Invalid amount.',
+      Errors.Data, {public: true, amount: {
+        currency_code: payment.currency, value: payment.amount}}
     );
     let result, error = null;
     try {
@@ -71,8 +72,8 @@ describe('createGatewayPayment', function() {
       orderId: 'test-1'
     };
     const expectedError = new BedrockError(
-      `Unsupported PayPal currency ${currency}.`,
-      Errors.Data, {public: true}
+      'Unsupported PayPal currency.',
+      Errors.Data, {public: true, currencyCode: currency}
     );
 
     let result, error = null;

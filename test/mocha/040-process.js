@@ -55,8 +55,8 @@ describe('processGatewayPayment', function() {
     const {order} = stubs.get(
       {id: paypalId, referenceId: payment.id, status: 'VOIDED'});
     const expectedError = new BedrockError(
-      `Expected PayPal Status COMPLETED got ${order.status}.`,
-      Errors.Data
+      'Expected PayPal Status COMPLETED.',
+      Errors.Data, {payPalStatus: order.status}
     );
     let result, error = null;
     try {
@@ -85,7 +85,8 @@ describe('processGatewayPayment', function() {
       {id: paypalId, referenceId: payment.id, status: 'CREATED'});
     stub.delete(() => true).reply(204);
     const expectedError = new BedrockError(
-      'PayPal order Canceled.', Errors.Data, {public: true});
+      'PayPal order Canceled.', Errors.Data,
+      {public: true, payPalId: paypalId});
     let result, error = null;
     try {
       result = await api.processGatewayPayment({payment});
