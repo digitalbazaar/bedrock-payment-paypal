@@ -1,57 +1,95 @@
 # bedrock-payment-paypal
-> This Plugin provides PayPal functionality to bedrock-payment.
 
-### 🏠 [Homepage](https://github.com/digitalbazaar/bedrock-payment-paypal#readme)
+[![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+
+> A paypal plugin for bedrock-payment.
+
+Provides the ability to securely create orders in paypal's system, process orders, and validate orders.
+
+## Table of Contents
+
+- [Security](#security)
+- [Background](#background)
+- [Install](#install)
+- [Usage](#usage)
+- [API](#api)
+- [Maintainers](#maintainers)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Security
+
+  All errors thrown need to be checked to make sure they do not return
+  PayPal clientIds or secrets to the logger or the user.
+
+## Background
 
 ## Install
 
-```sh
-npm install --save bedrock-payment-paypal
+```
+npm i --save bedrock-payment bedrock-payment-http bedrock-web-payment
+npm i --save bedrock-payment-paypal
 ```
 
-## Configure
+## Usage
 
-```js
+In your project you will need add the following in `/configs/bedrock-payment.js`.
+```
+const {config} = require('bedrock');
+const bedrockPayment = require('bedrock-payment');
+
+// this is used by the validator to ensure you
+// can not post a service not supported by the current project.
+config.bedrock_payment.services = ['paypal'];
+config.bedrock_payment.orderProcessor = 'your-order-processor-name';
+
+bedrockPayment.use('paypal', require('bedrock-payment-paypal'));
+bedrockPayment.use('plans', require('../lib/your-order-processor.js'));
+```
+
+You will also need a config file for PayPal itself.
+This file should be secret as it will need to contain your PayPal secret.
+
+```
 const {config} = require('bedrock');
 
-config.paypal = config.paypal || {};
-config.paypal.api = 'https://api.sandbox.paypal.com';
-config.paypal.clientId = 'your-client-id';
-config.paypal.secret = 'your-secret';
-// this will be the name that shows up in the papypal order.
-config.paypal.brandName = 'your-company-name';
-// this can be GET_FROM_FILE, NO_SHIPPING, & SET_PROVIDED_ADDRESS
-// it defaults to NO_SHIPPING.
-// You shouldn't have to set it at all.
-config.paypal.shippingPreference = 'NO_SHIPPING';
-```
-If you are concerned about your PayPal secret being exposed on github you can use
-an environment variable to store it:
-
-```sh
-export paypal_secret=your-secret-key
-export paypal_client_id=your_client_id
-```
-then use it in the config file
-
-```js
-config.paypal.clientId = process.env.paypal_client_id;
-config.paypal.secret = process.env.paypal_secret; 
+const cfg = config.paypal;
+cfg.api = 'https://api.sandbox.paypal.com';
+cfg.clientId = 'your-paypal-clientId';
+cfg.secret = 'your-paypal-secret';
+cfg.brandName = 'veres-accelerator';
 ```
 
-## Author
+## API
 
-👤 **Digital Bazaar, Inc.**
+    getGatewayCredentials
 
-* GitHub: [@digitalbazaar](https://github.com/digitalbazaar)
+      Used by bedrock-payment to get the credentials for the paypal
+      smart button.
 
-## 🤝 Contributing
+    updateGatewayPaymentAmount
 
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/digitalbazaar/bedrock-payment-paypal/issues).
+      Updates a paypal order's amount.
 
-## Show your support
+    createGatewayPayment
 
-Give a ⭐️ if this project helped you!
+      Creates a new order in paypal's system.
 
-***
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
+    processGatewayPayment
+
+      the last part of the process. This takes a Payment, finds it's PayPal
+      order, and then processes the whole thing.
+
+## Maintainers
+
+[@digitalbazaar](https://github.com/digitalbazaar)
+
+## Contributing
+
+PRs accepted.
+
+Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
+
+## License
+
+Bedrock License © 2019 digitalbazaar
