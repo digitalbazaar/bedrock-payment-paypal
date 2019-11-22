@@ -196,9 +196,8 @@ const getAuthToken = async ({clientId, secret, api}) => {
 const getOptions = async ({clientId, secret, api} = getConfig()) => {
   const {access_token, token_type} = await getAuthToken(
     {clientId, secret, api});
-  const Authorization = `${token_type} ${access_token}`;
   const headers = {
-    Authorization,
+    Authorization: `${token_type} ${access_token}`,
     Accept: 'application/json'
   };
   return {api, headers};
