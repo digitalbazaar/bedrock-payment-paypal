@@ -340,15 +340,21 @@ const compareAmount = ({order, expectedAmount}) => {
   const sameAmount = total.isEqualTo(expectedAmount.value);
   if(!sameAmount) {
     throw new BedrockError(
-      `Expected ${expectedAmount.value} amount got ${total.toString()}.`,
-      Errors.Data
+      `Unexpected amount.`,
+      Errors.Data,
+      {payPalId: order.id, expectedAmount, actualAmount: total.toString()}
     );
   }
   const sameCurrency = currencies.has(expectedAmount.currency_code);
   if(!sameCurrency) {
     throw new BedrockError(
       'Unexpected currency.',
-      Errors.Data, {public: true, currencyCode: expectedAmount.currency_code}
+      Errors.Data,
+      {
+        public: true,
+        payPalId: order.id,
+        currencyCode: expectedAmount.currency_code
+      }
     );
   }
   return true;
