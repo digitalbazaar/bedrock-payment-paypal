@@ -2,7 +2,7 @@
   "name": "bedrock-payment-paypal-test",
   "version": "0.0.1",
   "description": "Integration Tests for Bedrock Payment PayPal.",
-  "main": "index.js",
+  "main": "test.js",
   "private": true,
   "scripts": {
     "test": "node --preserve-symlinks test test"
