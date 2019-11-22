@@ -53,7 +53,7 @@ config.paypal.secret = process.env.paypal_secret;
 
 👤 **Digital Bazaar, Inc.**
 
-* Github: [@digitalbazaar](https://github.com/digitalbazaar)
+* GitHub: [@digitalbazaar](https://github.com/digitalbazaar)
 
 ## 🤝 Contributing
 
