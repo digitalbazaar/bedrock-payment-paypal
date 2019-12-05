@@ -32,7 +32,7 @@ const codes = {
 };
 
 const getConfig = () => {
-  const {api, clientId, secret} = config.paypal;
+  const {api, clientId, secret} = config['bedrock-payment-paypal'];
   if(!clientId) {
     throw new BedrockError(
       'Missing PayPal clientId in bedrock config.', Errors.Data);
@@ -365,14 +365,12 @@ const compareAmount = ({order, expectedAmount}) => {
  * and match the expectedAmount.
  *
  * @param {object} options - Options to use.
- * @param {object} options.payment - A Bedrock payment.
- * @param {object} options.amount - A Paypal amount object.
- * @param {BigNumber|number|string} options.expectedAmount - How is expected.
+ * @param {object} options.pendingPayment - A pending Bedrock payment.
+ * @param {object} options.updatedPayment - An updated Bedrock payment.
  *
- * @returns {object} The updated paypal order.
+ * @returns {object} The updated paypal order and bedrock payment.
  */
-const updateGatewayPaymentAmount = async (
-  {pendingPayment, updatedPayment}) => {
+const updateGatewayPaymentAmount = async ({pendingPayment, updatedPayment}) => {
   const expectedAmount = {
     currency_code: pendingPayment.currency,
     value: pendingPayment.amount
@@ -393,7 +391,7 @@ const updateGatewayPaymentAmount = async (
   const updatedOrder = await updateOrder({order, patch});
   // make sure the swap occurred.
   compareAmount({order: updatedOrder, expectedAmount: amount});
-  const payment = Object.assign(pendingPayment, updatedPayment);
+  const payment = Object.assign({}, pendingPayment, updatedPayment);
   return {updatedOrder, payment};
 };
 
@@ -402,7 +400,6 @@ const updateGatewayPaymentAmount = async (
  * a valid PayPal Order.
  *
  * @param {object} options - Options to use.
- * @param {Array<object>} options.clientPurchases - Client purchases.
  * @param {Array<object>} options.paypalPurchases - PayPal purchases.
  *
  * @returns {object} A verified purchase.
@@ -421,8 +418,6 @@ const verifyPurchase = ({paypalPurchases}) => {
   if(!paypalPurchase) {
     throw new BedrockError('Missing PayPal purchase.', Errors.Data);
   }
-  // throw an error if the client altered their purchase amount
-  // after the transaction succeeded.
   return paypalPurchase;
 };
 
@@ -497,7 +492,7 @@ const createGatewayPayment = async ({payment, intent = 'CAPTURE'}) => {
       reference_id: id,
       amount
     }];
-    const {brandName, shippingPreference} = config.paypal;
+    const {brandName, shippingPreference} = config['bedrock-payment-paypal'];
     const application_context = {
       brand_name: brandName || 'bedrock-order',
       shipping_preference: shippingPreference || 'NO_SHIPPING'
@@ -534,7 +529,8 @@ const processGatewayPayment = async ({payment}) => {
  *
  * @param {object} options - Options to use.
  * @param {object} options.order - A PayPal order object.
- * @param {object} options.card - The payee's card.
+ * @param {object} options.body - An update object for PayPal's capture
+ *   payment API.
  *
  * @returns {object} The result of the payment capture.
  */

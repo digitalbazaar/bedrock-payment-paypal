@@ -8,7 +8,7 @@ const {util} = require('bedrock');
 const c = util.config.main;
 const cc = c.computer();
 
-cc('paypal', {
+cc('bedrock-payment-paypal', {
   api: null,
   clientId: null,
   secret: null,
