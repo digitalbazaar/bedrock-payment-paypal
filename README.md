@@ -92,4 +92,4 @@ Small note: If editing the README, please conform to the [standard-readme](https
 
 ## License
 
-Bedrock License © 2019 digitalbazaar
+Bedrock License © 2019 Digital Bazaar, Inc.
