@@ -1,0 +1,32 @@
+{
+  "name": "bedrock-payment-paypal-test",
+  "version": "0.0.1",
+  "description": "Integration Tests for Bedrock Payment PayPal.",
+  "main": "test.js",
+  "private": true,
+  "scripts": {
+    "test": "node --preserve-symlinks test test"
+  },
+  "keywords": [
+    "test",
+    "bedrock-payment",
+    "bedrock-payment-paypal"
+  ],
+  "author": {
+    "name": "Digital Bazaar, Inc.",
+    "email": "support@digitalbazaar.com",
+    "url": "https://digitalbazaar.com"
+  },
+  "dependencies": {
+    "bedrock": "^3.0.1",
+    "bedrock-injector": "^1.0.0",
+    "bedrock-mongodb": "^6.0.2",
+    "bedrock-payment": "github:digitalbazaar/bedrock-payment#initial",
+    "bedrock-payment-paypal": "file:..",
+    "bedrock-test": "^4.0.2",
+    "bedrock-validation": "^4.2.0",
+    "nock": "^11.7.0",
+    "puppeteer": "^2.0.0"
+  },
+  "devDependencies": {}
+}
